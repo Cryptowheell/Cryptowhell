@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -63,7 +63,6 @@
             filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
 
-        /* The actual needle part */
         .stopper-needle {
             width: 0; 
             height: 0; 
@@ -71,7 +70,7 @@
             border-right: 15px solid transparent;
             border-top: 35px solid #FFD700; /* Gold */
             transform-origin: top center;
-            transition: transform 0.1s ease-out; /* Smooth tick animation */
+            transition: transform 0.1s ease-out; 
         }
         
         .stopper-hub {
@@ -145,11 +144,11 @@
     <nav class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 flex justify-between items-center pointer-events-none">
         <div class="pointer-events-auto glass px-4 py-2 rounded-full flex items-center gap-3">
             <div class="w-2 h-2 rounded-full bg-red-500 transition-colors duration-300" id="status-dot"></div>
-            <span class="font-mono text-sm md:text-base text-gray-300" id="wallet-display">Not Connected</span>
+            <span class="font-mono text-sm md:text-base text-gray-300" id="wallet-display">Bağlı Değil</span>
         </div>
 
         <div class="pointer-events-auto glass px-5 py-2 rounded-full">
-             <span class="text-xs text-gray-400 uppercase tracking-widest mr-2">Balance</span>
+             <span class="text-xs text-gray-400 uppercase tracking-widest mr-2">Bakiye</span>
              <span class="font-bold text-green-400 font-mono" id="balance-display">-- SOL</span>
         </div>
     </nav>
@@ -162,7 +161,7 @@
             <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-white to-green-400 drop-shadow-2xl">
                 SOLANA SPIN
             </h1>
-            <p class="text-gray-400 mt-2 text-sm md:text-base tracking-wide">PROVABLY FAIR • INSTANT PAYOUTS</p>
+            <p class="text-gray-400 mt-2 text-sm md:text-base tracking-wide">ADİL OYUN • ANINDA ÖDEME</p>
         </div>
 
         <!-- Wheel Section -->
@@ -186,27 +185,28 @@
 
         <!-- Controls -->
         <div class="flex flex-col items-center gap-4 w-full max-w-xs md:max-w-sm z-20">
-            <button id="action-btn" class="btn-glow w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg uppercase tracking-wider shadow-lg shadow-purple-900/40 disabled:opacity-50 disabled:cursor-not-allowed">
-                Connect Wallet
+            <!-- DÜZELTME: onclick eklendi ve ID korundu -->
+            <button id="action-btn" onclick="App.openModal('modal-wallet')" class="btn-glow w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg uppercase tracking-wider shadow-lg shadow-purple-900/40 disabled:opacity-50 disabled:cursor-not-allowed">
+                Cüzdan Bağla
             </button>
             <div class="flex items-center gap-2 text-xs text-gray-500">
-                <span>Cost: <strong class="text-white">0.05 SOL</strong></span>
+                <span>Bedel: <strong class="text-white">0.05 SOL</strong></span>
                 <span>•</span>
-                <span>Network: <strong class="text-green-400">Mainnet</strong></span>
+                <span>Ağ: <strong class="text-green-400">Mainnet</strong></span>
             </div>
         </div>
 
     </main>
 
-    <!-- History Panel (Desktop: Bottom Left / Mobile: Bottom) -->
+    <!-- History Panel -->
     <div class="fixed bottom-6 left-6 z-30 hidden md:block">
         <div class="glass p-4 rounded-2xl w-72">
             <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
-                <h3 class="text-xs font-bold uppercase text-gray-400">Live History</h3>
+                <h3 class="text-xs font-bold uppercase text-gray-400">Canlı Geçmiş</h3>
                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
             </div>
             <div id="history-list" class="flex flex-col gap-2 max-h-[150px] overflow-y-auto history-scroll pr-1">
-                <div class="text-center text-xs text-gray-600 py-2 italic">Waiting for spins...</div>
+                <div class="text-center text-xs text-gray-600 py-2 italic">Çevirme bekleniyor...</div>
             </div>
         </div>
     </div>
@@ -216,14 +216,13 @@
     <div id="modal-result" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="glass p-1 rounded-3xl max-w-sm w-full mx-4 transform scale-90 transition-transform duration-300" id="modal-result-inner">
             <div class="bg-[#0B0E14] rounded-[22px] p-8 text-center relative overflow-hidden">
-                <!-- BG Glow -->
                 <div id="modal-glow" class="absolute top-0 left-0 w-full h-full bg-purple-500/10 z-0"></div>
                 
                 <div class="relative z-10">
                     <div id="modal-emoji" class="text-6xl mb-4 animate-bounce">🎉</div>
-                    <h2 id="modal-title" class="text-2xl font-bold text-white mb-2">YOU WON!</h2>
-                    <p id="modal-desc" class="text-gray-400 mb-6">0.5 SOL has been sent to your wallet.</p>
-                    <button onclick="App.closeModal('modal-result')" class="w-full py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold transition">Close</button>
+                    <h2 id="modal-title" class="text-2xl font-bold text-white mb-2">KAZANDIN!</h2>
+                    <p id="modal-desc" class="text-gray-400 mb-6">Ödül cüzdanına gönderildi.</p>
+                    <button onclick="App.closeModal('modal-result')" class="w-full py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold transition">Kapat</button>
                 </div>
             </div>
         </div>
@@ -232,7 +231,7 @@
     <!-- Wallet Select Modal -->
     <div id="modal-wallet" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
         <div class="glass p-8 rounded-3xl max-w-xs w-full mx-4 transform scale-95 transition-transform">
-            <h3 class="text-xl font-bold text-center mb-6">Select Wallet</h3>
+            <h3 class="text-xl font-bold text-center mb-6">Cüzdan Seçimi</h3>
             <div class="flex flex-col gap-3">
                 <button onclick="App.wallet.connect('phantom')" class="flex items-center justify-between p-4 rounded-xl bg-[#2C2D3A] hover:bg-[#353646] transition group">
                     <span class="font-bold">Phantom</span>
@@ -242,52 +241,54 @@
                     <span class="font-bold">Backpack</span>
                     <div class="w-3 h-3 rounded-full bg-gray-600 group-hover:bg-red-400 transition"></div>
                 </button>
+                <div class="text-xs text-center text-gray-500 mt-2">
+                    Cüzdan yüklü değil mi? <a href="https://phantom.app/" target="_blank" class="text-purple-400 underline">Phantom İndir</a>
+                </div>
             </div>
-            <button onclick="App.closeModal('modal-wallet')" class="w-full mt-4 py-2 text-sm text-gray-500 hover:text-white">Cancel</button>
+            <button onclick="App.closeModal('modal-wallet')" class="w-full mt-4 py-2 text-sm text-gray-500 hover:text-white">İptal</button>
         </div>
     </div>
 
     <script>
-        /**
-         * PRO APP ARCHITECTURE
-         * Namespace: App
-         * Modules: Wallet, Wheel, Audio, UI
-         */
-        
         const CONFIG = {
-            treasury: "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE", // Wallet to receive funds
+            treasury: "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE", 
             cost: 0.05,
             rpc: 'https://api.mainnet-beta.solana.com'
         };
 
         const App = {
-            state: {
-                isSpinning: false,
-                isProcessing: false,
-                lastAngle: 0
-            },
+            state: { isSpinning: false, isProcessing: false },
 
-            // --- MODULE: WALLET MANAGER ---
             wallet: {
                 provider: null,
                 publicKey: null,
-                connection: new solanaWeb3.Connection(CONFIG.rpc, 'confirmed'),
-                
+                connection: null,
+
                 init() {
-                    // Auto Connect Check
+                    try { this.connection = new solanaWeb3.Connection(CONFIG.rpc, 'confirmed'); } catch(e){}
+                    
                     const savedWallet = localStorage.getItem('connectedWallet');
                     if (savedWallet) {
-                        setTimeout(() => this.connect(savedWallet, true), 500);
+                        // Sayfa tam yüklenince bağlanmayı dene
+                        if (document.readyState === 'complete') this.connect(savedWallet, true);
+                        else window.addEventListener('load', () => setTimeout(() => this.connect(savedWallet, true), 1000));
                     }
                 },
 
+                getProvider(type) {
+                    if (type === 'phantom') {
+                        if (window.solana && window.solana.isPhantom) return window.solana;
+                        if (window.phantom?.solana) return window.phantom.solana;
+                    } 
+                    else if (type === 'backpack') return window.backpack;
+                    return null;
+                },
+
                 async connect(type, silent = false) {
-                    let provider = null;
-                    if (type === 'phantom' && window.solana?.isPhantom) provider = window.solana;
-                    if (type === 'backpack' && window.backpack?.isBackpack) provider = window.backpack;
+                    const provider = this.getProvider(type);
 
                     if (!provider) {
-                        if(!silent) App.ui.toast("Wallet not found!", "error");
+                        if (!silent) App.ui.toast(`${type} cüzdanı bulunamadı!`, "error");
                         return;
                     }
 
@@ -298,27 +299,23 @@
                         
                         localStorage.setItem('connectedWallet', type);
                         App.closeModal('modal-wallet');
-                        
-                        // Setup Listeners
                         this.setupListeners(provider);
-                        
-                        // Update UI
                         App.ui.updateAuth(true, this.publicKey);
                         this.getBalance();
-                        App.ui.toast("Wallet Connected", "success");
+                        
+                        if (!silent) App.ui.toast("Cüzdan Bağlandı", "success");
 
                     } catch (err) {
-                        if(!silent) {
-                            console.error(err);
-                            App.ui.toast("Connection cancelled", "error");
+                        if (!silent) {
+                            console.error("Connect Err:", err);
+                            App.ui.toast("Bağlantı hatası veya reddedildi.", "error");
                         }
+                        if (silent) localStorage.removeItem('connectedWallet');
                     }
                 },
 
                 async disconnect() {
-                    if (this.provider) {
-                        try { await this.provider.disconnect(); } catch(e){}
-                    }
+                    if (this.provider) try { await this.provider.disconnect(); } catch(e){}
                     this.provider = null;
                     this.publicKey = null;
                     localStorage.removeItem('connectedWallet');
@@ -326,87 +323,71 @@
                 },
 
                 setupListeners(provider) {
-                    // Remove old listeners to avoid duplicates if reconnecting
                     provider.removeAllListeners?.('disconnect');
                     provider.removeAllListeners?.('accountChanged');
-
                     provider.on('disconnect', () => {
                         this.disconnect();
-                        App.ui.toast("Wallet Disconnected", "info");
+                        App.ui.toast("Cüzdan bağlantısı kesildi", "info");
                     });
-
-                    provider.on('accountChanged', (publicKey) => {
-                        if (publicKey) {
-                            this.publicKey = publicKey.toString();
+                    provider.on('accountChanged', (pk) => {
+                        if (pk) {
+                            this.publicKey = pk.toString();
                             App.ui.updateAuth(true, this.publicKey);
                             this.getBalance();
-                            App.ui.toast("Account Changed", "info");
-                        } else {
-                            // Only disconnect if explicitly handled as disconnected
-                            this.disconnect(); 
-                        }
+                        } else this.disconnect(); 
                     });
                 },
 
                 async getBalance() {
-                    if (!this.publicKey) return;
+                    if (!this.publicKey || !this.connection) return;
                     try {
                         const bal = await this.connection.getBalance(new solanaWeb3.PublicKey(this.publicKey));
                         App.ui.setBalance(bal / solanaWeb3.LAMPORTS_PER_SOL);
-                    } catch (e) { console.error("Balance err", e); }
+                    } catch (e) {}
                 },
 
                 async payEntryFee() {
                     if (!this.publicKey || !this.provider) return false;
-                    
                     try {
-                        const tx = new solanaWeb3.Transaction().add(
+                        const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+                        const tx = new solanaWeb3.Transaction({ feePayer: new solanaWeb3.PublicKey(this.publicKey), recentBlockhash: blockhash }).add(
                             solanaWeb3.SystemProgram.transfer({
                                 fromPubkey: new solanaWeb3.PublicKey(this.publicKey),
                                 toPubkey: new solanaWeb3.PublicKey(CONFIG.treasury),
-                                lamports: CONFIG.cost * solanaWeb3.LAMPORTS_PER_SOL
+                                lamports: Math.round(CONFIG.cost * solanaWeb3.LAMPORTS_PER_SOL)
                             })
                         );
-                        
-                        const { blockhash } = await this.connection.getLatestBlockhash('confirmed');
-                        tx.recentBlockhash = blockhash;
-                        tx.feePayer = new solanaWeb3.PublicKey(this.publicKey);
-
                         const { signature } = await this.provider.signAndSendTransaction(tx);
-                        App.ui.toast("Processing Transaction...", "info");
+                        App.ui.toast("İşlem onayı bekleniyor...", "info");
                         
-                        await this.connection.confirmTransaction(signature);
-                        App.ui.toast("Payment Confirmed! Spinning...", "success");
-                        this.getBalance(); // Refresh balance
-                        return true;
+                        const confirmation = await this.connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature }, 'confirmed');
+                        if (confirmation.value.err) throw new Error("Tx Failed");
 
+                        App.ui.toast("Ödeme Başarılı! Çark dönüyor...", "success");
+                        this.getBalance();
+                        return true;
                     } catch (err) {
-                        console.error(err);
-                        let msg = "Payment Failed";
-                        if(err.message.includes("0x1")) msg = "Insufficient Funds";
-                        if(err.message.includes("rejected")) msg = "User Rejected";
-                        App.ui.toast(msg, "error");
+                        console.error("Pay Err:", err);
+                        App.ui.toast("Ödeme başarısız oldu.", "error");
                         return false;
                     }
                 }
             },
 
-            // --- MODULE: WHEEL PHYSICS & RENDER ---
             wheel: {
                 canvas: document.getElementById('wheel'),
                 ctx: null,
                 prizes: [
                     { label: "1 BTC",   color: "#F7931A", type: "win" },
-                    { label: "LOSS",    color: "#1F2937", type: "loss" },
+                    { label: "KAYIP",    color: "#1F2937", type: "loss" },
                     { label: "0.5 SOL", color: "#9945FF", type: "win", id: "SOL05" },
-                    { label: "LOSS",    color: "#1F2937", type: "loss" },
+                    { label: "KAYIP",    color: "#1F2937", type: "loss" },
                     { label: "50 XRP",  color: "#3498DB", type: "win" },
-                    { label: "BAD LUCK",color: "#374151", type: "loss" },
+                    { label: "ŞANSSIZ", color: "#374151", type: "loss" },
                     { label: "0.1 SOL", color: "#14F195", type: "win", id: "SOL01" },
-                    { label: "LOSS",    color: "#1F2937", type: "loss" }
+                    { label: "KAYIP",    color: "#1F2937", type: "loss" }
                 ],
-                rotation: 0, // Current rotation in Radians
-                velocity: 0,
+                rotation: 0,
                 
                 init() {
                     this.ctx = this.canvas.getContext('2d');
@@ -422,8 +403,6 @@
                     const r = cx - 10;
 
                     ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
-
-                    // Outer Ring
                     ctx.beginPath();
                     ctx.arc(cx, cy, cx-2, 0, 2*Math.PI);
                     ctx.fillStyle = "#111";
@@ -431,26 +410,19 @@
 
                     this.prizes.forEach((p, i) => {
                         const angle = i * arc;
-                        
                         ctx.beginPath();
                         ctx.moveTo(cx, cy);
                         ctx.arc(cx, cy, r, angle, angle + arc);
                         ctx.lineTo(cx, cy);
-                        
-                        // Gradient
                         const grad = ctx.createRadialGradient(cx, cy, 50, cx, cy, r);
                         grad.addColorStop(0, p.color);
-                        grad.addColorStop(1, this.adjustColor(p.color, -30));
-                        
+                        grad.addColorStop(1, p.color); // Simplified gradient
                         ctx.fillStyle = grad;
                         ctx.fill();
-                        
-                        // Stroke
                         ctx.strokeStyle = "#0B0E14";
                         ctx.lineWidth = 4;
                         ctx.stroke();
 
-                        // Text
                         ctx.save();
                         ctx.translate(cx, cy);
                         ctx.rotate(angle + arc / 2);
@@ -460,24 +432,15 @@
                         ctx.fillText(p.label, r - 40, 8);
                         ctx.restore();
                     });
-                    
-                    // Apply rotation via CSS transform to avoid canvas redraw cost during high FPS
                     this.canvas.style.transform = `rotate(${this.rotation * (180/Math.PI) - 90}deg)`;
                 },
 
-                adjustColor(color, amount) {
-                    return color; // Helper placeholder
-                },
-
                 async spin() {
-                    // Start Audio Context
                     await App.audio.init();
-
-                    // Determine Winner (Weighted Logic)
                     const rand = Math.random();
                     let targetId = null;
-                    if(rand < 0.05) targetId = "SOL01"; // 5% chance
-                    if(rand < 0.01) targetId = "SOL05"; // 1% chance
+                    if(rand < 0.05) targetId = "SOL01";
+                    if(rand < 0.01) targetId = "SOL05";
                     
                     let winningIndices = [];
                     this.prizes.forEach((p,i) => {
@@ -485,60 +448,42 @@
                         if(!targetId && p.type === 'loss') winningIndices.push(i);
                     });
                     
-                    if(winningIndices.length === 0) winningIndices.push(1); // Default loss
+                    if(winningIndices.length === 0) winningIndices.push(1);
                     const winIndex = winningIndices[Math.floor(Math.random() * winningIndices.length)];
 
-                    // Physics Calc
                     const arc = (2 * Math.PI) / this.prizes.length;
-                    // We want the wheel to land such that the needle (at -PI/2 or 270deg visual) points to the slice.
-                    // But our CSS rotates the canvas -90deg (-PI/2). So needle is effectively at 0 relative to canvas array start?
-                    // Let's simplify: Add random Full Rotations + specific arc to land.
-                    
                     const sliceAngle = (winIndex * arc) + (arc/2); 
-                    // To land on index i, we need to rotate BACKWARDS by i * arc? 
-                    // Or rotate forwards until 2PI - angle?
-                    
-                    // Simple: Total rotation = Current + (5 * 360) + Delta
                     const cycles = 5 + Math.floor(Math.random() * 3);
                     const targetRotation = this.rotation + (cycles * 2 * Math.PI) + ((2 * Math.PI) - sliceAngle);
                     
-                    // Animation Loop using custom easing
                     const duration = 6000;
                     const startRot = this.rotation;
                     const change = targetRotation - startRot;
                     const startTime = performance.now();
-
                     let lastTickSection = -1;
 
                     const animate = (time) => {
                         const elapsed = time - startTime;
                         if(elapsed < duration) {
-                            // Ease Out Quint
                             const t = elapsed / duration;
                             const t1 = t - 1;
                             const ease = (t1 * t1 * t1 * t1 * t1 + 1);
                             
                             this.rotation = startRot + (change * ease);
-                            this.draw(); // Actually updates CSS transform
+                            this.draw();
                             
-                            // Tick Sound Logic
-                            // Calculate which slice is currently under the needle (0 rads due to css offset?)
-                            // Total angle traversed
                             const deg = (this.rotation * 180 / Math.PI) % 360;
                             const section = Math.floor(deg / (360 / this.prizes.length));
                             
                             if (section !== lastTickSection) {
                                 App.audio.playTick();
-                                // Animate Needle
                                 const needle = document.getElementById('stopper');
                                 needle.style.transform = "rotate(-20deg)";
                                 setTimeout(() => needle.style.transform = "rotate(0deg)", 50);
                                 lastTickSection = section;
                             }
-
                             requestAnimationFrame(animate);
                         } else {
-                            // End
                             this.rotation = targetRotation;
                             this.draw();
                             App.finishGame(this.prizes[winIndex]);
@@ -548,21 +493,16 @@
                 }
             },
 
-            // --- MODULE: AUDIO ---
             audio: {
                 synth: null,
-                init() {
-                    if (Tone.context.state !== 'running') return Tone.start();
-                },
+                init() { if (Tone.context.state !== 'running') return Tone.start(); },
                 playTick() {
-                    // Simple membrane synth for clicking sound
                     if(!this.synth) this.synth = new Tone.MembraneSynth().toDestination();
                     this.synth.triggerAttackRelease("C2", "32n", Tone.now(), 0.5);
                 },
                 playWin() {
                     const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-                    const now = Tone.now();
-                    synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", now);
+                    synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", Tone.now());
                 },
                 playLoss() {
                      const synth = new Tone.PluckSynth().toDestination();
@@ -570,7 +510,6 @@
                 }
             },
 
-            // --- MODULE: UI MANIPULATION ---
             ui: {
                 btn: document.getElementById('action-btn'),
                 walletText: document.getElementById('wallet-display'),
@@ -584,27 +523,24 @@
                         this.dot.classList.add('shadow-[0_0_10px_#22c55e]');
                         
                         this.btn.innerText = "SPIN (0.05 SOL)";
-                        this.btn.onclick = () => App.startGame(); // Change action
+                        this.btn.onclick = () => App.startGame(); 
                     } else {
-                        this.walletText.innerText = "Not Connected";
+                        this.walletText.innerText = "Bağlı Değil";
                         this.dot.classList.replace('bg-green-500', 'bg-red-500');
                         this.dot.classList.remove('shadow-[0_0_10px_#22c55e]');
                         this.bal.innerText = "-- SOL";
                         
-                        this.btn.innerText = "Connect Wallet";
+                        this.btn.innerText = "Cüzdan Bağla";
                         this.btn.onclick = () => App.openModal('modal-wallet');
                     }
                 },
                 
-                setBalance(amount) {
-                    this.bal.innerText = amount.toFixed(3) + " SOL";
-                },
+                setBalance(amount) { this.bal.innerText = amount.toFixed(3) + " SOL"; },
 
                 toast(msg, type = "info") {
                     const c = document.getElementById('toast-container');
                     const d = document.createElement('div');
                     const colors = { success: "border-green-500", error: "border-red-500", info: "border-blue-500" };
-                    
                     d.className = `toast glass px-4 py-3 rounded-xl border-l-4 ${colors[type]} flex items-center gap-3 min-w-[250px]`;
                     d.innerHTML = `<span class="font-bold text-sm">${msg}</span>`;
                     c.appendChild(d);
@@ -613,36 +549,27 @@
 
                 addHistory(prize) {
                     const list = document.getElementById('history-list');
-                    if(list.children[0].innerText.includes("Waiting")) list.innerHTML = "";
-                    
+                    if(list.children[0].innerText.includes("bekleniyor")) list.innerHTML = "";
                     const div = document.createElement('div');
                     const isWin = prize.type === 'win';
                     div.className = "flex justify-between items-center p-2 rounded bg-white/5 border border-white/10 text-sm animate-pulse";
-                    div.innerHTML = `
-                        <span class="font-bold ${isWin ? 'text-green-400' : 'text-gray-500'}">${prize.label}</span>
-                        <span class="text-xs text-gray-600">${new Date().toLocaleTimeString()}</span>
-                    `;
-                    // Stop animation after a bit
+                    div.innerHTML = `<span class="font-bold ${isWin ? 'text-green-400' : 'text-gray-500'}">${prize.label}</span><span class="text-xs text-gray-600">${new Date().toLocaleTimeString()}</span>`;
                     setTimeout(() => div.classList.remove('animate-pulse'), 1000);
-                    
                     list.insertBefore(div, list.firstChild);
                 }
             },
 
-            // --- CONTROLLERS ---
             async startGame() {
                 if (this.state.isSpinning || this.state.isProcessing) return;
-                
                 this.state.isProcessing = true;
-                App.ui.btn.innerText = "Confirming...";
+                App.ui.btn.innerText = "Onaylanıyor...";
                 App.ui.btn.disabled = true;
 
                 const paid = await App.wallet.payEntryFee();
-                
                 if (paid) {
                     this.state.isProcessing = false;
                     this.state.isSpinning = true;
-                    App.ui.btn.innerText = "Good Luck!";
+                    App.ui.btn.innerText = "Bol Şans!";
                     this.wheel.spin();
                 } else {
                     this.state.isProcessing = false;
@@ -654,63 +581,53 @@
             finishGame(prize) {
                 this.state.isSpinning = false;
                 App.ui.btn.disabled = false;
-                App.ui.btn.innerText = "SPIN AGAIN (0.05 SOL)";
+                App.ui.btn.innerText = "TEKRAR DENE (0.05 SOL)";
                 App.ui.addHistory(prize);
 
                 const mTitle = document.getElementById('modal-title');
                 const mDesc = document.getElementById('modal-desc');
                 const mEmoji = document.getElementById('modal-emoji');
-                const mGlow = document.getElementById('modal-glow');
-
+                
                 if (prize.type === 'win') {
                     App.audio.playWin();
-                    mTitle.innerText = "BIG WIN!";
+                    mTitle.innerText = "KAZANDIN!";
                     mTitle.className = "text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 mb-2";
-                    mDesc.innerText = `You won ${prize.label}! Funds are on the way.`;
+                    mDesc.innerText = `${prize.label} kazandın!`;
                     mEmoji.innerText = "🤑";
-                    mGlow.className = "absolute top-0 left-0 w-full h-full bg-green-500/20 z-0";
-                    
                     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                 } else {
                     App.audio.playLoss();
-                    mTitle.innerText = "Not this time...";
+                    mTitle.innerText = "Şanssız Gün...";
                     mTitle.className = "text-2xl font-bold text-gray-300 mb-2";
-                    mDesc.innerText = "Try again to win the Jackpot.";
+                    mDesc.innerText = "Tekrar dene!";
                     mEmoji.innerText = "📉";
-                    mGlow.className = "absolute top-0 left-0 w-full h-full bg-red-500/10 z-0";
                 }
-
                 setTimeout(() => App.openModal('modal-result'), 500);
             },
 
-            // Modal Utils
             openModal(id) {
                 const m = document.getElementById(id);
                 m.classList.remove('hidden');
-                setTimeout(() => {
-                    m.classList.remove('opacity-0');
-                    if(id === 'modal-wallet') m.querySelector('div').classList.replace('scale-95','scale-100');
-                    else m.querySelector('div').classList.replace('scale-90','scale-100');
-                }, 10);
+                setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.replace('scale-90','scale-100'); }, 10);
             },
             closeModal(id) {
                 const m = document.getElementById(id);
                 m.classList.add('opacity-0');
-                if(id === 'modal-wallet') m.querySelector('div').classList.replace('scale-100','scale-95');
-                else m.querySelector('div').classList.replace('scale-100','scale-90');
+                m.querySelector('div').classList.replace('scale-100','scale-90');
                 setTimeout(() => m.classList.add('hidden'), 300);
             }
         };
 
-        // Init App
         window.addEventListener('DOMContentLoaded', () => {
             App.wheel.init();
             App.wallet.init();
             
-            // Expose for HTML onclick handlers
+            // DÜZELTME: Butonların event listener'ları atansın diye başlangıç state'ini set et
+            if (!localStorage.getItem('connectedWallet')) {
+                App.ui.updateAuth(false);
+            }
             window.App = App;
         });
-
     </script>
 </body>
 </html>
