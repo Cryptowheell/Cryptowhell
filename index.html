@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="appTitle">Solana Spin Wheel - Try Your Luck</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title id="appTitle">Solana Premium Wheel</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Solana Web3.js -->
@@ -12,48 +12,105 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <!-- Tone.js (Sound Effects) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
         
+        :root {
+            --primary-glow: #a855f7;
+            --secondary-glow: #14F195;
+            --bg-dark: #0f0c29;
+        }
+
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #0c1221;
-            background-image: radial-gradient(circle at center, #1b2742 0%, #0c1221 100%);
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
             color: white;
             overflow-x: hidden;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1); 
+            min-height: 100vh;
+        }
+
+        /* Animated Background Particles */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=');
+            animation: moveBackground 100s linear infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes moveBackground {
+            from { background-position: 0 0; }
+            to { background-position: 1000px 1000px; }
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Main Title Typography */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        /* Wheel Styling */
+        .wheel-wrapper {
+            position: relative;
+            padding: 10px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #5b21b6, #14F195, #5b21b6);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.4);
+            animation: borderRotate 10s linear infinite;
+        }
+        
+        @keyframes borderRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         .wheel-container {
             position: relative;
-            width: 350px;
-            height: 350px;
-            margin: 0 auto;
+            width: 320px;
+            height: 320px;
             border-radius: 50%;
-            border: 12px solid #a855f7;
-            box-shadow: 0 0 70px rgba(168, 85, 247, 0.8), inset 0 0 25px rgba(0, 0, 0, 0.9);
             overflow: hidden;
-            transition: transform 0.1s;
+            background: #1f2937;
+            border: 8px solid #1f2937;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            z-index: 5;
         }
 
         @media (min-width: 768px) {
             .wheel-container {
-                width: 500px;
-                height: 500px;
-                border-width: 18px;
+                width: 480px;
+                height: 480px;
             }
         }
 
         .stopper {
             position: absolute;
-            top: -20px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
-            width: 50px;
-            height: 60px;
-            background: #14F195;
-            box-shadow: 0 5px 20px rgba(20, 241, 149, 1), 0 0 10px #14F195;
-            clip-path: polygon(100% 0, 50% 100%, 0 0);
+            width: 0; 
+            height: 0; 
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 45px solid #fbbf24; /* Gold pointer */
+            filter: drop-shadow(0 0 5px rgba(251, 191, 36, 0.8));
             z-index: 20;
         }
         
@@ -62,509 +119,574 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            background: radial-gradient(circle at top left, #ffffff 30%, #a855f7 50%, #4c1d95 100%);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.8);
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #cbd5e1 20%, #475569 100%);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,255,255,0.5);
             z-index: 25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #94a3b8;
+        }
+
+        .center-logo {
+            font-size: 24px;
+            color: #0f172a;
+        }
+
+        /* Buttons */
+        .neon-btn {
+            position: relative;
+            background: linear-gradient(90deg, #7c3aed, #db2777);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+        }
+        .neon-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(219, 39, 119, 0.8);
+        }
+        .neon-btn:disabled {
+            background: #374151;
+            cursor: not-allowed;
+            opacity: 0.6;
+            box-shadow: none;
+        }
+        
+        /* Modal Animation */
+        .modal-enter {
+            animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes modalPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         canvas {
-            width: 100%;
-            height: 100%;
-            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99); 
-        }
-
-        .spin-btn {
-            background: linear-gradient(to right, #9945FF, #14F195);
-            box-shadow: 0 8px 0 #5b21b6, 0 20px 30px rgba(0,0,0,0.6);
-            transition: all 0.1s;
-            color: white;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-        }
-        .spin-btn:active {
-            transform: translateY(8px);
-            box-shadow: 0 0 0 #5b21b6, 0 0 0 rgba(0,0,0,0.4);
-        }
-        .spin-btn:disabled {
-            background: #4b5563;
-            filter: grayscale(100%);
-            cursor: not-allowed;
-            transform: translateY(0);
-            box-shadow: 0 6px 0 #374151, 0 0 0 rgba(0,0,0,0.4);
-        }
-
-        /* UI Elements */
-        #balanceContainer {
-            background-color: rgba(30, 41, 59, 0.7);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #334155;
-            backdrop-filter: blur(5px);
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.1, 1); 
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="flex flex-col items-center justify-center p-4">
+    <div class="bg-particles"></div>
 
-    <!-- Wallet Balance -->
-    <div id="balanceContainer" class="absolute top-4 left-4 z-50 text-right">
-        <p class="text-sm font-semibold text-gray-300">Balance:</p>
-        <p class="text-xl font-bold text-green-300" id="walletBalance">-- SOL</p>
-    </div>
-
-    <!-- Connect Wallet Button -->
-    <div class="absolute top-4 right-4 z-50">
-        <button id="connectWalletBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition shadow-lg border border-purple-500 flex items-center gap-2">
-            <svg id="walletIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
-                <path d="M19.34 4.8C18.42 3.86 17.18 3.29 15.82 3.29H7.13C4.24 3.29 1.9 5.63 1.9 8.52V15.48C1.9 18.37 4.24 20.71 7.13 20.71H15.82C17.18 20.71 18.42 20.14 19.34 19.2C20.26 18.26 20.83 16.98 20.83 15.58V8.42C20.83 7.02 20.26 5.74 19.34 4.8ZM14.07 15.34C13.25 15.34 12.58 14.67 12.58 13.85C12.58 13.03 13.25 12.36 14.07 12.36C14.89 12.36 15.56 13.03 15.56 13.85C15.56 14.67 14.89 15.34 14.07 15.34ZM17.93 11.48C17.11 11.48 16.44 10.81 16.44 9.99C16.44 9.17 17.11 8.5 17.93 8.5C18.75 8.5 19.42 9.17 19.42 9.99C19.42 10.81 18.75 11.48 17.93 11.48Z" fill="white"/>
-            </svg>
-            <span id="walletAddress">Connect Wallet</span>
+    <!-- Header / Stats -->
+    <div class="fixed top-0 left-0 w-full p-4 flex justify-between items-center z-50">
+        <div class="glass-panel px-4 py-2 rounded-xl flex flex-col md:flex-row items-center gap-2">
+            <span class="text-xs md:text-sm text-gray-400 uppercase tracking-wider">Balance</span>
+            <span class="text-lg md:text-xl font-bold text-green-400 font-mono" id="walletBalance">-- SOL</span>
+        </div>
+        
+        <button id="connectWalletBtn" class="glass-panel px-5 py-2.5 rounded-full font-bold text-sm md:text-base hover:bg-white/10 transition flex items-center gap-2 border-purple-500/30">
+            <i class="fa-solid fa-wallet text-purple-400"></i>
+            <span id="walletAddress">Connect</span>
         </button>
     </div>
 
-    <!-- Title -->
-    <div class="text-center mb-8 relative z-10 mt-12 md:mt-0">
-        <h1 id="mainTitle" class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-green-300 to-purple-500 uppercase tracking-wider drop-shadow-sm">
-            Try Your Luck
-        </h1>
-        <p id="subTitle" class="text-purple-200 mt-2 font-medium">Pay 0.05 SOL, Spin the Wheel!</p>
-        <p class="text-xs text-yellow-300 mt-2 font-semibold">NOTE: All prizes are paid in SOL.</p>
-    </div>
+    <!-- Main Content -->
+    <div class="relative z-10 w-full max-w-4xl flex flex-col items-center mt-16 md:mt-0">
+        
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 uppercase tracking-widest mb-2">
+                Solana Spin
+            </h1>
+            <div class="inline-flex items-center gap-2 glass-panel px-4 py-1 rounded-full text-xs md:text-sm text-purple-200">
+                <i class="fa-solid fa-bolt text-yellow-400"></i>
+                <span>Cost: <span class="font-bold text-white">0.05 SOL</span></span>
+            </div>
+        </div>
 
-    <!-- Wheel Area -->
-    <div class="relative mb-10">
-        <div class="stopper"></div>
-        <div class="wheel-container bg-gray-800">
-            <canvas id="wheelCanvas" width="500" height="500"></canvas>
-            <div class="center-pivot"></div>
+        <!-- Wheel Section -->
+        <div class="relative mb-12 transform scale-90 md:scale-100">
+            <div class="stopper"></div>
+            
+            <!-- Rotating Border Wrapper -->
+            <div class="wheel-wrapper rounded-full p-1.5 md:p-2">
+                <!-- Static Wheel Container -->
+                <div class="wheel-container bg-gray-900" style="animation: none;">
+                    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                </div>
+            </div>
+
+            <div class="center-pivot">
+                <i class="fa-brands fa-solana center-logo"></i>
+            </div>
+        </div>
+
+        <!-- Status & Controls -->
+        <div class="w-full max-w-md text-center space-y-6">
+            <div id="statusMessage" class="min-h-[24px] text-sm md:text-base font-medium text-blue-300 tracking-wide"></div>
+
+            <button id="spinBtn" class="neon-btn w-full py-4 rounded-xl text-xl md:text-2xl font-bold uppercase tracking-widest text-white shadow-lg flex items-center justify-center gap-3" disabled>
+                <i class="fa-solid fa-lock" id="btnIcon"></i>
+                <span id="btnText">Connect First</span>
+            </button>
         </div>
     </div>
 
-    <!-- Status Message -->
-    <div id="statusMessage" class="h-6 text-green-400 font-bold text-center mb-4 transition-all duration-300"></div>
-
-    <!-- Spin Button -->
-    <button id="spinBtn" class="spin-btn px-12 py-4 rounded-full text-xl md:text-2xl font-black uppercase tracking-widest outline-none opacity-50 cursor-not-allowed" disabled>
-        Connect Wallet First
-    </button>
-
     <!-- Result Modal -->
-    <div id="resultModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-gray-900 border border-purple-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="resultModalContent">
-            <div id="modalIcon" class="text-6xl mb-4">🎉</div>
-            <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2">Title</h2>
-            <p id="modalMessage" class="text-xl text-yellow-400 font-bold mb-6">Message</p>
-            <button onclick="closeModal('resultModal')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition">Try Again</button>
+    <div id="resultModal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel border-2 border-purple-500/50 p-8 rounded-2xl text-center max-w-sm w-full mx-4 shadow-2xl modal-enter relative overflow-hidden">
+            <!-- Glow effect behind modal -->
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+            
+            <div id="modalIcon" class="text-6xl mb-4 transform hover:scale-110 transition duration-300 cursor-default">🎉</div>
+            <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2 font-[Orbitron]">WINNER</h2>
+            <div class="h-px w-24 bg-gray-600 mx-auto my-4"></div>
+            <p id="modalMessage" class="text-lg text-gray-300 mb-8 leading-relaxed">You won 0.5 SOL</p>
+            
+            <button onclick="closeModal('resultModal')" class="w-full bg-white text-gray-900 hover:bg-gray-200 font-bold py-3 px-4 rounded-lg transition uppercase tracking-wider">
+                Spin Again
+            </button>
         </div>
     </div>
     
     <!-- Wallet Selection Modal -->
-    <div id="walletSelectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-gray-800 border border-green-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="walletModalContent">
-            <h2 class="text-2xl font-bold text-white mb-6">Select Wallet</h2>
-            <p class="text-gray-300 mb-6">Choose a wallet to connect.</p>
+    <div id="walletSelectModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-panel border border-gray-700 p-8 rounded-2xl text-center max-w-sm w-full mx-4 modal-enter">
+            <h2 class="text-2xl font-bold text-white mb-2 font-[Orbitron]">Connect Wallet</h2>
+            <p class="text-gray-400 mb-6 text-sm">Select your preferred Solana wallet</p>
             
-            <button onclick="selectWalletProvider('backpack')" id="selectBackpackBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition mb-4 flex items-center justify-center gap-3">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Backpack_Logo.png/640px-Backpack_Logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Backpack">
-                Connect Backpack
-            </button>
+            <div class="space-y-3">
+                <button onclick="connectWalletType('backpack')" class="w-full glass-panel hover:bg-blue-600/20 border border-transparent hover:border-blue-500 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-between group">
+                    <span class="flex items-center gap-3">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Backpack_Logo.png/640px-Backpack_Logo.png" class="w-6 h-6 rounded-full" alt="Backpack">
+                        Backpack
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
+                </button>
+                
+                <button onclick="connectWalletType('phantom')" class="w-full glass-panel hover:bg-purple-600/20 border border-transparent hover:border-purple-500 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-between group">
+                    <span class="flex items-center gap-3">
+                        <img src="https://cryptologos.cc/logos/phantom-phantom-logo.png" class="w-6 h-6 rounded-full" alt="Phantom">
+                        Phantom
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-gray-500 group-hover:text-white transition"></i>
+                </button>
+            </div>
             
-            <button onclick="selectWalletProvider('phantom')" id="selectPhantomBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-3">
-                <img src="https://cryptologos.cc/logos/phantom-phantom-logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Phantom">
-                Connect Phantom
-            </button>
-            
-            <button onclick="closeModal('walletSelectModal')" class="mt-4 text-gray-400 hover:text-white transition text-sm">Cancel</button>
+            <button onclick="closeModal('walletSelectModal')" class="mt-6 text-gray-500 hover:text-white transition text-sm underline decoration-gray-600 underline-offset-4">Close</button>
         </div>
     </div>
 
     <script>
-        // === CONFIGURATION ===
-        const translations = {
-            en: {
-                connect: "Connect Wallet", 
-                disconnect: "Disconnect",
-                spinBtnInit: "Connect Wallet First", 
-                spinBtnActive: "PAY 0.05 SOL AND SPIN",
-                spinBtnWaiting: "Confirming Transaction...", 
-                statusConnected: "Wallet connected!",
-                statusConnectingError: "Connection rejected or error occurred.",
-                statusNoWallet: "Wallet not found! Please install Phantom or Backpack.",
-                statusPaymentConfirm: "Please CONFIRM the transaction in your wallet...",
-                statusPaymentSending: "Transaction sent, awaiting network confirmation...",
-                statusPaymentSuccess: "Payment Confirmed! Wheel is spinning...",
-                statusPaymentRejected: "Transaction rejected by user.",
-                statusPaymentInsufficient: "Insufficient SOL balance.",
-                statusPaymentError: "Error:", 
-                statusDisconnected: "Disconnected.",
-                modalTitle_win: "Congratulations!", 
-                modalTitle_loss: "Better Luck Next Time!",
-                modalTitle_huge_loss: "Ouch!",
-                modalMessage_win_btc: "You won 1 BTC! Amazing!",
-                modalMessage_near_miss: "Missed by a hair! Try again.",
-                modalMessage_huge_loss: "HUGE LOSS!",
+        // === GAME CONFIGURATION ===
+        const CONFIG = {
+            treasury: "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE",
+            amount: 0.05,
+            // Fallback RPC list for better stability
+            rpcEndpoints: [
+                'https://rpc.ankr.com/solana',
+                'https://api.mainnet-beta.solana.com',
+                'https://solana-mainnet.rpc.extrnode.com'
+            ]
+        };
+
+        // === ROBUST RPC MANAGER ===
+        const RpcManager = {
+            connection: null,
+            currentIndex: 0,
+
+            async getConnection() {
+                // If we already have a working connection, check if it's responsive (simplified check)
+                if (this.connection) return this.connection;
+                
+                return await this.findWorkingConnection();
+            },
+
+            async findWorkingConnection() {
+                for (let i = 0; i < CONFIG.rpcEndpoints.length; i++) {
+                    const url = CONFIG.rpcEndpoints[this.currentIndex];
+                    console.log(`Trying RPC: ${url}`);
+                    try {
+                        const conn = new solanaWeb3.Connection(url, 'confirmed');
+                        // Test connection with a lightweight call
+                        await conn.getSlot();
+                        console.log(`Connected to RPC: ${url}`);
+                        this.connection = conn;
+                        return conn;
+                    } catch (e) {
+                        console.warn(`RPC ${url} failed, trying next...`);
+                        this.currentIndex = (this.currentIndex + 1) % CONFIG.rpcEndpoints.length;
+                    }
+                }
+                throw new Error("All RPC endpoints failed. Please check your internet connection.");
             }
         };
-        
-        // --- SETTINGS ---
-        // Enter your treasury wallet address here
-        const TREASURY_WALLET = "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE"; 
-        const SOL_AMOUNT = 0.05;
-        // Using mainnet-beta api, if this fails due to rate limit, try 'https://rpc.ankr.com/solana' again
-        const RPC_URL = 'https://api.mainnet-beta.solana.com'; 
 
-        // === INITIALIZATION ===
-        window.addEventListener('DOMContentLoaded', () => {
+        // === WALLET SERVICE (Core Logic) ===
+        const WalletService = {
+            provider: null,
+            publicKey: null,
             
-            let connection = null;
-            let provider = null;
-            let userPublicKey = null;
-            let isSpinning = false; 
-            let isProcessing = false; 
+            // Wait for providers to inject (Polling Mechanism)
+            waitForProvider(type, retries = 10) {
+                return new Promise((resolve, reject) => {
+                    const check = () => {
+                        let provider = null;
+                        if (type === 'backpack' && window.backpack) provider = window.backpack;
+                        if (type === 'phantom') {
+                             if (window.phantom?.solana?.isPhantom) provider = window.phantom.solana;
+                             else if (window.solana?.isPhantom) provider = window.solana;
+                        }
 
-            // DOM Elements
-            const connectWalletBtn = document.getElementById('connectWalletBtn');
-            const walletAddressSpan = document.getElementById('walletAddress');
-            const statusMsg = document.getElementById('statusMessage');
-            const spinBtn = document.getElementById('spinBtn');
-            const walletBalanceElement = document.getElementById('walletBalance');
+                        if (provider) {
+                            resolve(provider);
+                        } else if (retries > 0) {
+                            setTimeout(() => {
+                                this.waitForProvider(type, retries - 1).then(resolve).catch(reject);
+                            }, 200); // Check every 200ms
+                        } else {
+                            reject(new Error(`${type} wallet not found. Please install extension.`));
+                        }
+                    };
+                    check();
+                });
+            },
 
-            // --- HELPER FUNCTIONS ---
-            const getTranslation = (key) => translations.en[key] || key;
-
-            // Find Wallet Providers
-            const getAvailableProviders = () => {
-                const providers = [];
-                // Check Backpack
-                if (window.backpack) {
-                    providers.push({ id: 'backpack', name: 'Backpack', provider: window.backpack });
-                }
-                // Check Phantom
-                if (window.solana && window.solana.isPhantom) {
-                    providers.push({ id: 'phantom', name: 'Phantom', provider: window.solana });
-                }
-                return providers;
-            };
-
-            const updateUI = (connected) => {
-                if (connected && userPublicKey) {
-                    const shortKey = userPublicKey.slice(0, 4) + '...' + userPublicKey.slice(-4);
-                    walletAddressSpan.innerText = shortKey + " (Logout)";
-                    spinBtn.innerText = getTranslation('spinBtnActive');
-                    spinBtn.disabled = false;
-                    spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    spinBtn.classList.add('cursor-pointer');
-                    connectWalletBtn.classList.replace('bg-purple-600', 'bg-red-600'); // Turn red for logout
-                    statusMsg.innerText = getTranslation('statusConnected');
-                } else {
-                    walletAddressSpan.innerText = getTranslation('connect');
-                    spinBtn.innerText = getTranslation('spinBtnInit');
-                    spinBtn.disabled = true;
-                    spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    spinBtn.classList.remove('cursor-pointer');
-                    connectWalletBtn.classList.replace('bg-red-600', 'bg-purple-600');
-                    connectWalletBtn.classList.replace('bg-green-600', 'bg-purple-600');
-                    walletBalanceElement.innerText = '-- SOL';
-                    statusMsg.innerText = "";
-                }
-            };
-
-            // --- WALLET LOGIC ---
-            window.selectWalletProvider = async (id) => {
-                window.closeModal('walletSelectModal');
-                let selectedProvider = null;
-
-                if (id === 'backpack' && window.backpack) {
-                    selectedProvider = window.backpack;
-                } else if (id === 'phantom' && window.solana) {
-                    selectedProvider = window.solana;
-                }
-
-                if (selectedProvider) await connectToProvider(selectedProvider);
-            };
-
-            async function connectToProvider(selectedProvider) {
+            // Connect Logic
+            async connect(type) {
                 try {
-                    provider = selectedProvider;
-                    // Connect to wallet
+                    const provider = await this.waitForProvider(type);
+                    
+                    // Connect (Triggers Popup)
                     const response = await provider.connect();
                     
-                    // Get Public Key
-                    if (response && response.publicKey) {
-                        userPublicKey = response.publicKey.toString();
-                    } else if (provider.publicKey) {
-                        userPublicKey = provider.publicKey.toString();
-                    }
+                    // Set State
+                    this.provider = provider;
+                    this.publicKey = (response.publicKey || provider.publicKey).toString();
                     
-                    // RPC Connection
-                    connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+                    // Setup Listeners
+                    this.setupListeners();
                     
-                    // Check Balance
-                    await fetchBalance();
-                    updateUI(true);
-
-                    // Listen for disconnect
-                    provider.on('disconnect', () => disconnectWallet());
-                    // Listen for account change
-                    provider.on('accountChanged', (publicKey) => {
-                        if (publicKey) {
-                            userPublicKey = publicKey.toString();
-                            fetchBalance();
-                        } else {
-                            disconnectWallet(); // Logout if no key
-                        }
-                    });
-
+                    return this.publicKey;
                 } catch (err) {
                     console.error("Connection Error:", err);
-                    statusMsg.innerText = getTranslation('statusConnectingError');
+                    throw err;
                 }
-            }
+            },
 
-            async function disconnectWallet() {
-                if (provider) {
-                    try { await provider.disconnect(); } catch(e){}
+            // Disconnect Logic
+            async disconnect() {
+                if (this.provider) {
+                    try { await this.provider.disconnect(); } catch (e) { console.warn(e); }
                 }
-                provider = null;
-                userPublicKey = null;
-                connection = null;
-                updateUI(false);
-            }
+                this.provider = null;
+                this.publicKey = null;
+            },
 
-            async function fetchBalance() {
-                if (!connection || !userPublicKey) return;
-                try {
-                    const bal = await connection.getBalance(new solanaWeb3.PublicKey(userPublicKey));
-                    walletBalanceElement.innerText = `${(bal / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4)} SOL`;
-                } catch (e) {
-                    console.error("Balance Error:", e);
-                    walletBalanceElement.innerText = '-- SOL';
-                    // Don't show alert here to avoid spamming the user on load
-                }
-            }
+            // Listen for Account Changes / Disconnects from Extension
+            setupListeners() {
+                if (!this.provider) return;
 
-            // --- BUTTON ACTIONS ---
-            connectWalletBtn.onclick = () => {
-                if (userPublicKey) {
-                    disconnectWallet();
-                } else {
-                    const providers = getAvailableProviders();
-                    if (providers.length === 0) {
-                        statusMsg.innerText = getTranslation('statusNoWallet');
-                        // Show modal anyway just in case
-                        window.openModal('walletSelectModal');
-                    } else if (providers.length === 1) {
-                        // Connect directly if only one provider
-                        connectToProvider(providers[0].provider);
+                // Handle Disconnect
+                this.provider.on('disconnect', () => {
+                    console.log("Wallet disconnected by user");
+                    this.disconnect().then(() => UI.update(false));
+                });
+
+                // Handle Account Change
+                this.provider.on('accountChanged', (newPublicKey) => {
+                    if (newPublicKey) {
+                        this.publicKey = newPublicKey.toString();
+                        UI.update(true); // Update Balance & UI
                     } else {
-                        // Show modal if multiple providers
-                        window.openModal('walletSelectModal');
+                        // If no key returned, treat as disconnect
+                        this.disconnect().then(() => UI.update(false));
                     }
+                });
+            },
+
+            // Fetch Balance with Retry
+            async getBalance() {
+                if (!this.publicKey) return 0;
+                try {
+                    const conn = await RpcManager.getConnection();
+                    const balance = await conn.getBalance(new solanaWeb3.PublicKey(this.publicKey));
+                    return balance / solanaWeb3.LAMPORTS_PER_SOL;
+                } catch (e) {
+                    console.error("Balance fetch failed:", e);
+                    return 0;
+                }
+            },
+
+            // Send Transaction
+            async sendPayment() {
+                if (!this.provider || !this.publicKey) throw new Error("Wallet not connected");
+
+                const conn = await RpcManager.getConnection();
+
+                const transaction = new solanaWeb3.Transaction().add(
+                    solanaWeb3.SystemProgram.transfer({
+                        fromPubkey: new solanaWeb3.PublicKey(this.publicKey),
+                        toPubkey: new solanaWeb3.PublicKey(CONFIG.treasury),
+                        lamports: Math.floor(CONFIG.amount * solanaWeb3.LAMPORTS_PER_SOL)
+                    })
+                );
+
+                const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash('finalized');
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = new solanaWeb3.PublicKey(this.publicKey);
+
+                // Sign & Send
+                const { signature } = await this.provider.signAndSendTransaction(transaction);
+                
+                // Confirm with visual feedback
+                UI.setStatus("Verifying on Blockchain...", "warn");
+                
+                const confirmation = await conn.confirmTransaction({
+                    signature, blockhash, lastValidBlockHeight
+                });
+
+                if (confirmation.value.err) throw new Error("Transaction failed on chain");
+                
+                return signature;
+            }
+        };
+
+        // === UI CONTROLLER ===
+        const UI = {
+            els: {},
+            
+            init() {
+                this.els = {
+                    connectBtn: document.getElementById('connectWalletBtn'),
+                    addressSpan: document.getElementById('walletAddress'),
+                    statusMsg: document.getElementById('statusMessage'),
+                    spinBtn: document.getElementById('spinBtn'),
+                    btnText: document.getElementById('btnText'),
+                    btnIcon: document.getElementById('btnIcon'),
+                    balance: document.getElementById('walletBalance'),
+                };
+            },
+
+            async update(isConnected) {
+                if (isConnected && WalletService.publicKey) {
+                    // Connected State
+                    const shortKey = WalletService.publicKey.slice(0, 4) + '..' + WalletService.publicKey.slice(-4);
+                    this.els.addressSpan.innerText = shortKey;
+                    
+                    this.els.btnText.innerText = "SPIN NOW";
+                    this.els.btnIcon.className = "fa-solid fa-play";
+                    this.els.spinBtn.disabled = false;
+                    
+                    this.setStatus("Ready to spin!", "success");
+                    this.els.connectBtn.classList.add('border-green-500');
+                    
+                    // Update Balance
+                    const bal = await WalletService.getBalance();
+                    this.els.balance.innerText = `${bal.toFixed(3)} SOL`;
+
+                } else {
+                    // Disconnected State
+                    this.els.addressSpan.innerText = "Connect";
+                    this.els.btnText.innerText = "Connect First";
+                    this.els.btnIcon.className = "fa-solid fa-lock";
+                    this.els.spinBtn.disabled = true;
+                    this.els.balance.innerText = "-- SOL";
+                    this.setStatus("", "");
+                    this.els.connectBtn.classList.remove('border-green-500');
+                }
+            },
+
+            setStatus(msg, type) {
+                this.els.statusMsg.innerText = msg;
+                if (type === 'success') this.els.statusMsg.className = "text-green-400 font-bold animate-pulse";
+                else if (type === 'error') this.els.statusMsg.className = "text-red-400 font-bold";
+                else if (type === 'warn') this.els.statusMsg.className = "text-yellow-400 font-bold";
+                else this.els.statusMsg.className = "text-blue-300";
+            }
+        };
+
+        // === APP INITIALIZATION ===
+        window.addEventListener('DOMContentLoaded', () => {
+            UI.init();
+            initWheel();
+
+            // Connect Button Logic
+            document.getElementById('connectWalletBtn').onclick = () => {
+                if (WalletService.publicKey) {
+                    WalletService.disconnect().then(() => UI.update(false));
+                } else {
+                    window.openModal('walletSelectModal');
                 }
             };
 
-            spinBtn.onclick = async () => {
-                if (!provider || !userPublicKey || isSpinning || isProcessing) return;
+            // Global connect function for modal
+            window.connectWalletType = async (type) => {
+                window.closeModal('walletSelectModal');
+                try {
+                    UI.setStatus(`Connecting to ${type}...`, 'warn');
+                    await WalletService.connect(type);
+                    UI.update(true);
+                } catch (error) {
+                    UI.setStatus(error.message, 'error');
+                }
+            };
+
+            // Spin Button Logic
+            let isSpinning = false;
+            document.getElementById('spinBtn').onclick = async () => {
+                if (isSpinning) return;
                 
-                isProcessing = true;
-                spinBtn.disabled = true;
-                spinBtn.innerText = getTranslation('spinBtnWaiting');
-                
-                // Inform user
-                statusMsg.innerText = getTranslation('statusPaymentConfirm');
-                statusMsg.className = "h-6 text-yellow-400 font-bold text-center mb-4"; 
+                // Disable UI
+                UI.els.spinBtn.disabled = true;
+                UI.els.btnText.innerText = "Processing...";
+                UI.els.btnIcon.className = "fa-solid fa-circle-notch fa-spin";
+                UI.setStatus("Approve transaction in wallet...", "warn");
 
                 try {
-                    // Check connection
-                    if (!connection) connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
-
-                    // 1. Create Transaction
-                    const transaction = new solanaWeb3.Transaction().add(
-                        solanaWeb3.SystemProgram.transfer({
-                            fromPubkey: new solanaWeb3.PublicKey(userPublicKey),
-                            toPubkey: new solanaWeb3.PublicKey(TREASURY_WALLET),
-                            lamports: Math.floor(SOL_AMOUNT * solanaWeb3.LAMPORTS_PER_SOL)
-                        })
-                    );
+                    // 1. Payment
+                    await WalletService.sendPayment();
                     
-                    // 2. Get Blockhash
-                    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-                    transaction.recentBlockhash = blockhash;
-                    transaction.feePayer = new solanaWeb3.PublicKey(userPublicKey);
-
-                    // 3. Request Signature from Wallet (Popup)
-                    const { signature } = await provider.signAndSendTransaction(transaction);
+                    // 2. Success UI
+                    UI.setStatus("Confirmed! Spinning...", "success");
+                    UI.update(true); // Refresh balance
                     
-                    statusMsg.innerText = getTranslation('statusPaymentSending');
-                    statusMsg.className = "h-6 text-blue-400 font-bold text-center mb-4";
-
-                    // 4. Wait for Confirmation
-                    const confirmation = await connection.confirmTransaction({
-                        signature,
-                        blockhash,
-                        lastValidBlockHeight
-                    });
-
-                    if (confirmation.value.err) throw new Error("Transaction failed on network.");
-
-                    statusMsg.innerText = getTranslation('statusPaymentSuccess');
-                    statusMsg.className = "h-6 text-green-400 font-bold text-center mb-4";
-                    
-                    // Update Balance
-                    fetchBalance();
-                    
-                    // START GAME
+                    // 3. Spin Game
+                    isSpinning = true;
                     await startSpinAnimation();
 
                 } catch (error) {
-                    console.error("Payment Error:", error);
-                    let msg = error.message || "Unknown Error";
+                    console.error(error);
+                    let msg = error.message || "Unknown error";
+                    if (msg.includes("User rejected")) msg = "Transaction rejected by user.";
                     
-                    // Make error messages user friendly
-                    if (msg.includes("User rejected") || error.code === 4001) {
-                        msg = getTranslation('statusPaymentRejected');
-                    } else if (msg.includes("0x1")) {
-                        msg = getTranslation('statusPaymentInsufficient'); 
-                    } else if (msg.includes("403") || msg.includes("429") || msg.includes("Network request failed")) {
-                        msg = "Network busy (RPC Error). Please try again later.";
-                    }
-
-                    statusMsg.innerText = `${getTranslation('statusPaymentError')} ${msg}`;
-                    statusMsg.className = "h-6 text-red-500 font-bold text-center mb-4";
-                } finally {
-                    isProcessing = false;
-                    // Enable button if not spinning
-                    if (!isSpinning) {
-                         spinBtn.disabled = false;
-                         spinBtn.innerText = getTranslation('spinBtnActive');
-                    }
+                    UI.setStatus(msg, "error");
+                    
+                    // Reset Button
+                    UI.els.spinBtn.disabled = false;
+                    UI.els.btnText.innerText = "SPIN NOW";
+                    UI.els.btnIcon.className = "fa-solid fa-play";
+                    isSpinning = false;
                 }
             };
+        });
 
-            // --- GAME LOGIC (WHEEL) ---
+        // === WHEEL & ANIMATION LOGIC (Visuals) ===
+        function initWheel() {
             const canvas = document.getElementById('wheelCanvas');
             const ctx = canvas.getContext('2d');
-            const prizePool = { SOL_05: { max: 5, current: 0 } }; 
             
-            // Prize List
             const prizes = [
-                { text: "1 BTC", type: 'win', color: "#f7931a", txt: "#fff" }, 
-                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
-                { text: "0.5 SOL", type: 'win', id: 'SOL_05', color: "#9945FF", txt: "#fff" },   
-                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "50 XRP", type: 'win', color: "#2596be", txt: "#fff" }, 
-                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
-                { text: "HUGE LOSS", type: 'huge_loss', color: "#881337", txt: "#fff" }, 
-                { text: "0.01 ETH", type: 'win', color: "#627eea", txt: "#fff" },
-                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "200 DOGE", type: 'win', color: "#C2A633", txt: "#fff" }, 
-                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
-                { text: "50 USDT", type: 'win', color: "#26a17b", txt: "#fff" },
-                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
-                { text: "0.1 SOL", type: 'win', id: 'SOL_SMALL', color: "#14F195", txt: "#000" }
+                { text: "1 BTC", type: 'win', bgStart: "#f59e0b", bgEnd: "#b45309", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "LOSS", type: 'loss', bgStart: "#475569", bgEnd: "#334155", txt: "#94a3b8" }, 
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "0.5 SOL", type: 'win', id: 'SOL_05', bgStart: "#a855f7", bgEnd: "#7e22ce", txt: "#fff" },   
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "LOSS", type: 'loss', bgStart: "#475569", bgEnd: "#334155", txt: "#94a3b8" }, 
+                { text: "50 XRP", type: 'win', bgStart: "#0ea5e9", bgEnd: "#0284c7", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "REKT", type: 'huge_loss', bgStart: "#ef4444", bgEnd: "#991b1b", txt: "#fff" }, 
+                { text: "0.01 ETH", type: 'win', bgStart: "#6366f1", bgEnd: "#4338ca", txt: "#fff" },
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "LOSS", type: 'loss', bgStart: "#475569", bgEnd: "#334155", txt: "#94a3b8" }, 
+                { text: "DOGE", type: 'win', bgStart: "#eab308", bgEnd: "#a16207", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "50 USDT", type: 'win', bgStart: "#10b981", bgEnd: "#047857", txt: "#fff" },
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "LOSS", type: 'loss', bgStart: "#475569", bgEnd: "#334155", txt: "#94a3b8" }, 
+                { text: "EMPTY", type: 'miss', bgStart: "#334155", bgEnd: "#1e293b", txt: "#64748b" }, 
+                { text: "0.1 SOL", type: 'win', id: 'SOL_SMALL', bgStart: "#22c55e", bgEnd: "#15803d", txt: "#fff" }
             ];
 
             const totalPrizes = prizes.length;
-            const sliceDeg = 360 / totalPrizes;
             let currentRotation = 0;
 
             function drawWheel() {
                 const cx = canvas.width / 2;
                 const cy = canvas.height / 2;
-                const r = cx;
+                const r = cx - 10;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Outer Ring
+                ctx.beginPath();
+                ctx.arc(cx, cy, r + 5, 0, 2 * Math.PI);
+                ctx.fillStyle = "#111827";
+                ctx.fill();
+                ctx.strokeStyle = "#fbbf24";
+                ctx.lineWidth = 4;
+                ctx.stroke();
 
                 prizes.forEach((prize, i) => {
                     const angle = (i * 2 * Math.PI) / totalPrizes;
+                    const endAngle = angle + (2 * Math.PI) / totalPrizes;
+                    
                     ctx.beginPath();
-                    ctx.arc(cx, cy, r, angle, angle + (2 * Math.PI) / totalPrizes);
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, r, angle, endAngle);
                     ctx.lineTo(cx, cy);
                     
-                    const grad = ctx.createRadialGradient(cx, cy, r*0.1, cx, cy, r);
-                    grad.addColorStop(0, prize.color);
-                    grad.addColorStop(1, '#000');
-                    ctx.fillStyle = grad;
+                    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+                    gradient.addColorStop(0, prize.bgEnd);
+                    gradient.addColorStop(1, prize.bgStart);
+                    ctx.fillStyle = gradient;
                     ctx.fill();
-                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                    
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)'; 
+                    ctx.lineWidth = 1; 
+                    ctx.stroke();
 
                     ctx.save();
                     ctx.translate(cx, cy);
                     ctx.rotate(angle + (Math.PI / totalPrizes));
                     ctx.textAlign = "right";
                     ctx.fillStyle = prize.txt;
-                    ctx.font = "bold 16px Montserrat";
-                    ctx.fillText(prize.text, r - 25, 5);
+                    ctx.font = "bold 16px Rajdhani";
+                    ctx.shadowColor = "rgba(0,0,0,0.8)";
+                    ctx.shadowBlur = 4;
+                    ctx.fillText(prize.text, r - 30, 5);
                     ctx.restore();
                 });
             }
 
-            async function startSpinAnimation() {
-                isSpinning = true;
-                spinBtn.disabled = true;
-
-                // Sound Effect (Optional)
+            // Expose start function globally so the Button Logic can call it
+            window.startSpinAnimation = async () => {
+                // Sound
                 if (window.Tone) {
                     try {
-                        if (Tone.context.state !== 'running') await Tone.start();
-                        const synth = new Tone.NoiseSynth({ envelope: { release: 4 } }).toDestination();
-                        synth.triggerAttackRelease("2n");
-                    } catch(e) { console.log("Sound error (minor):", e); }
+                        await Tone.start();
+                        const synth = new Tone.MembraneSynth().toDestination();
+                        synth.triggerAttackRelease("C2", "8n");
+                    } catch(e) {}
                 }
 
-                // --- WIN LOGIC ---
-                // For a real gambling app, this logic must be on the server (backend).
-                // Client-side logic can be manipulated.
+                // Win Logic (Client Side Demo)
                 const rnd = Math.random();
                 let targetId = null;
-                
-                // 1% chance 0.5 SOL, 10% chance 0.1 SOL
                 if (rnd < 0.01) targetId = 'SOL_05';
                 else if (rnd < 0.10) targetId = 'SOL_SMALL';
 
                 let targets = [];
                 prizes.forEach((p, i) => {
-                    if (targetId && p.id === targetId) {
-                        if (targetId === 'SOL_05' && prizePool.SOL_05.current >= prizePool.SOL_05.max) return;
-                        targets.push(i);
-                    }
-                    else if (!targetId && (p.type === 'miss' || p.type === 'loss' || p.type === 'huge_loss')) {
-                        targets.push(i);
-                    }
+                    if (targetId && p.id === targetId) targets.push(i);
+                    else if (!targetId && (p.type === 'miss' || p.type === 'loss' || p.type === 'huge_loss')) targets.push(i);
                 });
                 
-                if (targets.length === 0) targets.push(1); // Default miss
+                if (targets.length === 0) targets.push(1);
                 const winnerIndex = targets[Math.floor(Math.random() * targets.length)];
                 
-                // Rotation calc
+                const sliceDeg = 360 / totalPrizes;
                 const targetAngle = (winnerIndex * sliceDeg) + (sliceDeg/2);
                 let rot = targetAngle + 90; 
-                rot += (Math.random() * (sliceDeg-10)) - (sliceDeg/2 - 5); 
+                rot += (Math.random() * (sliceDeg-12)) - (sliceDeg/2 - 6); 
                 
-                const spinAngle = (5 * 360) + (rot - (currentRotation % 360)); 
-                if (spinAngle < 0) spinAngle += 360;
-
+                const spinAngle = (8 * 360) + (rot - (currentRotation % 360)); 
                 currentRotation += spinAngle;
+                
                 canvas.style.transform = `rotate(-${currentRotation}deg)`;
 
-                // When spin ends
-                setTimeout(() => {
-                    isSpinning = false;
-                    spinBtn.disabled = false;
-                    spinBtn.innerText = getTranslation('spinBtnActive');
-                    
-                    const winPrize = prizes[winnerIndex];
-                    if (winPrize.id === 'SOL_05') prizePool.SOL_05.current++;
-
-                    showResult(winPrize);
-                }, 5000); // 5 seconds animation
-            }
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        // Re-enable UI handled by caller, just show result here
+                        showResult(prizes[winnerIndex]);
+                        resolve();
+                    }, 5000);
+                });
+            };
 
             function showResult(prize) {
                 const title = document.getElementById('modalTitle');
@@ -572,46 +694,46 @@
                 const icon = document.getElementById('modalIcon');
                 
                 if (prize.type === 'win') {
-                    title.innerText = getTranslation('modalTitle_win');
-                    msg.innerText = "You won " + prize.text + "!";
+                    title.innerText = "VICTORY!";
+                    title.className = "text-3xl font-bold text-green-400 mb-2 font-[Orbitron]";
+                    msg.innerText = `You won ${prize.text}!`;
                     icon.innerText = "🎉";
                     
-                    // Confetti
-                    var d = 1500; var end = Date.now() + d;
+                    const duration = 2000;
+                    const end = Date.now() + duration;
                     (function frame() {
-                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
-                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#a855f7', '#14F195'] });
+                        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#a855f7', '#14F195'] });
                         if (Date.now() < end) requestAnimationFrame(frame);
                     }());
-
+                    
+                    if (window.Tone) {
+                        const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                        synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n");
+                    }
                 } else {
-                    title.innerText = getTranslation('modalTitle_loss');
-                    msg.innerText = prize.text;
+                    title.innerText = "ALMOST...";
+                    title.className = "text-3xl font-bold text-gray-400 mb-2 font-[Orbitron]";
+                    msg.innerText = prize.text === 'EMPTY' ? "Better luck next time!" : prize.text;
                     icon.innerText = "😢";
                 }
-                
                 window.openModal('resultModal');
             }
 
-            // Initial Draw
             drawWheel();
+        }
 
-            // Modal Helpers
-            window.openModal = (id) => {
-                const m = document.getElementById(id);
-                m.classList.remove('hidden');
-                setTimeout(() => {
-                    m.classList.remove('opacity-0');
-                    m.querySelector('div').classList.replace('scale-90','scale-100');
-                },10);
-            }
-            window.closeModal = (id) => {
-                const m = document.getElementById(id);
-                m.classList.add('opacity-0');
-                m.querySelector('div').classList.replace('scale-100','scale-90');
-                setTimeout(() => m.classList.add('hidden'), 300);
-            }
-        });
+        // === GLOBAL MODALS ===
+        window.openModal = (id) => {
+            const m = document.getElementById(id);
+            m.classList.remove('hidden');
+            setTimeout(() => m.classList.remove('opacity-0'), 10);
+        }
+        window.closeModal = (id) => {
+            const m = document.getElementById(id);
+            m.classList.add('opacity-0');
+            setTimeout(() => m.classList.add('hidden'), 300);
+        }
     </script>
 </body>
 </html>
