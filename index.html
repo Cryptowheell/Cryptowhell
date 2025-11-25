@@ -2,631 +2,615 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solana Wheel - Pro Edition</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="appTitle">Solana Çarkıfelek - Şansını Dene</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    
-    <!-- Confetti & Tone.js -->
+    <!-- Confetti Efekti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Tone.js (Ses Efektleri) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --primary: #9945FF;
-            --secondary: #14F195;
-            --dark-bg: #0B0E14;
-            --panel-bg: rgba(22, 27, 34, 0.85);
-        }
-
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+        
         body {
-            font-family: 'Space Grotesk', sans-serif;
-            background-color: var(--dark-bg);
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(153, 69, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(20, 241, 149, 0.1) 0%, transparent 40%),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231f2937' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0c1221;
+            background-image: radial-gradient(circle at center, #1b2742 0%, #0c1221 100%);
             color: white;
             overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.1); 
         }
 
-        /* --- GLASSPANEL UTILS --- */
-        .glass {
-            background: var(--panel-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        /* --- WHEEL STYLES --- */
-        .wheel-wrapper {
+        .wheel-container {
             position: relative;
-            filter: drop-shadow(0 0 40px rgba(153, 69, 255, 0.2));
+            width: 350px;
+            height: 350px;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 12px solid #a855f7;
+            box-shadow: 0 0 70px rgba(168, 85, 247, 0.8), inset 0 0 25px rgba(0, 0, 0, 0.9);
+            overflow: hidden;
+            transition: transform 0.1s;
         }
 
-        .stopper-container {
+        @media (min-width: 768px) {
+            .wheel-container {
+                width: 500px;
+                height: 500px;
+                border-width: 18px;
+            }
+        }
+
+        .stopper {
             position: absolute;
             top: -20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 30;
-            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
-        }
-
-        .stopper-needle {
-            width: 0; 
-            height: 0; 
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 35px solid #FFD700; /* Gold */
-            transform-origin: top center;
-            transition: transform 0.1s ease-out; 
+            width: 50px;
+            height: 60px;
+            background: #14F195;
+            box-shadow: 0 5px 20px rgba(20, 241, 149, 1), 0 0 10px #14F195;
+            clip-path: polygon(100% 0, 50% 100%, 0 0);
+            z-index: 20;
         }
         
-        .stopper-hub {
-            width: 14px;
-            height: 14px;
-            background: #fff;
-            border-radius: 50%;
+        .center-pivot {
             position: absolute;
-            top: -5px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 10px #FFD700;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at top left, #ffffff 30%, #a855f7 50%, #4c1d95 100%);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(0, 0, 0, 0.8);
+            z-index: 25;
         }
 
         canvas {
-            border-radius: 50%;
-            transform: rotate(-90deg); /* Start at 12 o'clock */
+            width: 100%;
+            height: 100%;
+            transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99); 
         }
 
-        /* --- BUTTONS --- */
-        .btn-glow {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
+        .spin-btn {
+            background: linear-gradient(to right, #9945FF, #14F195);
+            box-shadow: 0 8px 0 #5b21b6, 0 20px 30px rgba(0,0,0,0.6);
+            transition: all 0.1s;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
         }
-        .btn-glow::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
+        .spin-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 0 0 #5b21b6, 0 0 0 rgba(0,0,0,0.4);
         }
-        .btn-glow:hover::before {
-            left: 100%;
-        }
-        .btn-glow:active {
-            transform: scale(0.98);
+        .spin-btn:disabled {
+            background: #4b5563;
+            filter: grayscale(100%);
+            cursor: not-allowed;
+            transform: translateY(0);
+            box-shadow: 0 6px 0 #374151, 0 0 0 rgba(0,0,0,0.4);
         }
 
-        /* --- TOASTS --- */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* UI Elements */
+        #balanceContainer {
+            background-color: rgba(30, 41, 59, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            backdrop-filter: blur(5px);
         }
-        .toast {
-            animation: slideInRight 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        /* --- HISTORY SCROLL --- */
-        .history-scroll::-webkit-scrollbar { width: 4px; }
-        .history-scroll::-webkit-scrollbar-track { background: transparent; }
-        .history-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 relative selection:bg-purple-500 selection:text-white">
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- Toast Layer -->
-    <div id="toast-container"></div>
+    <!-- Cüzdan Bakiyesi -->
+    <div id="balanceContainer" class="absolute top-4 left-4 z-50 text-right">
+        <p class="text-sm font-semibold text-gray-300">Bakiye:</p>
+        <p class="text-xl font-bold text-green-300" id="walletBalance">-- SOL</p>
+    </div>
 
-    <!-- NavBar -->
-    <nav class="fixed top-0 left-0 w-full z-40 p-4 md:p-6 flex justify-between items-center pointer-events-none">
-        <div class="pointer-events-auto glass px-4 py-2 rounded-full flex items-center gap-3">
-            <div class="w-2 h-2 rounded-full bg-red-500 transition-colors duration-300" id="status-dot"></div>
-            <span class="font-mono text-sm md:text-base text-gray-300" id="wallet-display">Bağlı Değil</span>
+    <!-- Cüzdan Bağla Butonu -->
+    <div class="absolute top-4 right-4 z-50">
+        <button id="connectWalletBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition shadow-lg border border-purple-500 flex items-center gap-2">
+            <svg id="walletIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
+                <path d="M19.34 4.8C18.42 3.86 17.18 3.29 15.82 3.29H7.13C4.24 3.29 1.9 5.63 1.9 8.52V15.48C1.9 18.37 4.24 20.71 7.13 20.71H15.82C17.18 20.71 18.42 20.14 19.34 19.2C20.26 18.26 20.83 16.98 20.83 15.58V8.42C20.83 7.02 20.26 5.74 19.34 4.8ZM14.07 15.34C13.25 15.34 12.58 14.67 12.58 13.85C12.58 13.03 13.25 12.36 14.07 12.36C14.89 12.36 15.56 13.03 15.56 13.85C15.56 14.67 14.89 15.34 14.07 15.34ZM17.93 11.48C17.11 11.48 16.44 10.81 16.44 9.99C16.44 9.17 17.11 8.5 17.93 8.5C18.75 8.5 19.42 9.17 19.42 9.99C19.42 10.81 18.75 11.48 17.93 11.48Z" fill="white"/>
+            </svg>
+            <span id="walletAddress">Cüzdan Bağla</span>
+        </button>
+    </div>
+
+    <!-- Başlık -->
+    <div class="text-center mb-8 relative z-10 mt-12 md:mt-0">
+        <h1 id="mainTitle" class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-green-300 to-purple-500 uppercase tracking-wider drop-shadow-sm">
+            Şansını Dene
+        </h1>
+        <p id="subTitle" class="text-purple-200 mt-2 font-medium">0.05 SOL Öde, Çarkı Çevir!</p>
+        <p class="text-xs text-yellow-300 mt-2 font-semibold">NOT: Tüm ödüller SOL (Solana) olarak ödenir.</p>
+    </div>
+
+    <!-- Çark Alanı -->
+    <div class="relative mb-10">
+        <div class="stopper"></div>
+        <div class="wheel-container bg-gray-800">
+            <canvas id="wheelCanvas" width="500" height="500"></canvas>
+            <div class="center-pivot"></div>
         </div>
+    </div>
 
-        <div class="pointer-events-auto glass px-5 py-2 rounded-full">
-             <span class="text-xs text-gray-400 uppercase tracking-widest mr-2">Bakiye</span>
-             <span class="font-bold text-green-400 font-mono" id="balance-display">-- SOL</span>
+    <!-- Durum Mesajı -->
+    <div id="statusMessage" class="h-6 text-green-400 font-bold text-center mb-4 transition-all duration-300"></div>
+
+    <!-- Çevirme Butonu -->
+    <button id="spinBtn" class="spin-btn px-12 py-4 rounded-full text-xl md:text-2xl font-black uppercase tracking-widest outline-none opacity-50 cursor-not-allowed" disabled>
+        Önce Cüzdanı Bağla
+    </button>
+
+    <!-- Sonuç Modalı -->
+    <div id="resultModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-purple-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="resultModalContent">
+            <div id="modalIcon" class="text-6xl mb-4">🎉</div>
+            <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2">Başlık</h2>
+            <p id="modalMessage" class="text-xl text-yellow-400 font-bold mb-6">Mesaj</p>
+            <button onclick="closeModal('resultModal')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition">Tekrar Dene</button>
         </div>
-    </nav>
-
-    <!-- Main Game Area -->
-    <main class="relative z-10 flex flex-col items-center w-full max-w-5xl">
-        
-        <!-- Header -->
-        <div class="text-center mb-8 md:mb-12 mt-20 md:mt-0">
-            <h1 class="text-5xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-white to-green-400 drop-shadow-2xl">
-                SOLANA SPIN
-            </h1>
-            <p class="text-gray-400 mt-2 text-sm md:text-base tracking-wide">ADİL OYUN • ANINDA ÖDEME</p>
-        </div>
-
-        <!-- Wheel Section -->
-        <div class="wheel-wrapper relative mb-12">
-            <!-- Stopper (The Needle) -->
-            <div class="stopper-container">
-                <div class="stopper-hub"></div>
-                <div class="stopper-needle" id="stopper"></div>
-            </div>
-
-            <!-- The Wheel Canvas -->
-            <div class="relative rounded-full border-[10px] border-[#1f2937] shadow-2xl bg-[#0B0E14]">
-                <canvas id="wheel" width="450" height="450" class="block w-[320px] h-[320px] md:w-[450px] md:h-[450px]"></canvas>
-                
-                <!-- Center Cap -->
-                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-gray-700 to-black rounded-full shadow-lg border-4 border-gray-800 flex items-center justify-center z-20">
-                    <div class="w-full h-full rounded-full border border-gray-500 opacity-20"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="flex flex-col items-center gap-4 w-full max-w-xs md:max-w-sm z-20">
-            <!-- DÜZELTME: onclick eklendi ve ID korundu -->
-            <button id="action-btn" onclick="App.openModal('modal-wallet')" class="btn-glow w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-lg uppercase tracking-wider shadow-lg shadow-purple-900/40 disabled:opacity-50 disabled:cursor-not-allowed">
-                Cüzdan Bağla
+    </div>
+    
+    <!-- Cüzdan Seçim Modalı -->
+    <div id="walletSelectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-800 border border-green-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="walletModalContent">
+            <h2 class="text-2xl font-bold text-white mb-6">Cüzdan Seç</h2>
+            <p class="text-gray-300 mb-6">Bağlanmak istediğin cüzdanı seç.</p>
+            
+            <button onclick="selectWalletProvider('backpack')" id="selectBackpackBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition mb-4 flex items-center justify-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Backpack_Logo.png/640px-Backpack_Logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Backpack">
+                Backpack ile Bağlan
             </button>
-            <div class="flex items-center gap-2 text-xs text-gray-500">
-                <span>Bedel: <strong class="text-white">0.05 SOL</strong></span>
-                <span>•</span>
-                <span>Ağ: <strong class="text-green-400">Mainnet</strong></span>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- History Panel -->
-    <div class="fixed bottom-6 left-6 z-30 hidden md:block">
-        <div class="glass p-4 rounded-2xl w-72">
-            <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
-                <h3 class="text-xs font-bold uppercase text-gray-400">Canlı Geçmiş</h3>
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            </div>
-            <div id="history-list" class="flex flex-col gap-2 max-h-[150px] overflow-y-auto history-scroll pr-1">
-                <div class="text-center text-xs text-gray-600 py-2 italic">Çevirme bekleniyor...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <!-- Win/Loss Modal -->
-    <div id="modal-result" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="glass p-1 rounded-3xl max-w-sm w-full mx-4 transform scale-90 transition-transform duration-300" id="modal-result-inner">
-            <div class="bg-[#0B0E14] rounded-[22px] p-8 text-center relative overflow-hidden">
-                <div id="modal-glow" class="absolute top-0 left-0 w-full h-full bg-purple-500/10 z-0"></div>
-                
-                <div class="relative z-10">
-                    <div id="modal-emoji" class="text-6xl mb-4 animate-bounce">🎉</div>
-                    <h2 id="modal-title" class="text-2xl font-bold text-white mb-2">KAZANDIN!</h2>
-                    <p id="modal-desc" class="text-gray-400 mb-6">Ödül cüzdanına gönderildi.</p>
-                    <button onclick="App.closeModal('modal-result')" class="w-full py-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold transition">Kapat</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Wallet Select Modal -->
-    <div id="modal-wallet" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="glass p-8 rounded-3xl max-w-xs w-full mx-4 transform scale-95 transition-transform">
-            <h3 class="text-xl font-bold text-center mb-6">Cüzdan Seçimi</h3>
-            <div class="flex flex-col gap-3">
-                <button onclick="App.wallet.connect('phantom')" class="flex items-center justify-between p-4 rounded-xl bg-[#2C2D3A] hover:bg-[#353646] transition group">
-                    <span class="font-bold">Phantom</span>
-                    <div class="w-3 h-3 rounded-full bg-gray-600 group-hover:bg-purple-400 transition"></div>
-                </button>
-                <button onclick="App.wallet.connect('backpack')" class="flex items-center justify-between p-4 rounded-xl bg-[#2C2D3A] hover:bg-[#353646] transition group">
-                    <span class="font-bold">Backpack</span>
-                    <div class="w-3 h-3 rounded-full bg-gray-600 group-hover:bg-red-400 transition"></div>
-                </button>
-                <div class="text-xs text-center text-gray-500 mt-2">
-                    Cüzdan yüklü değil mi? <a href="https://phantom.app/" target="_blank" class="text-purple-400 underline">Phantom İndir</a>
-                </div>
-            </div>
-            <button onclick="App.closeModal('modal-wallet')" class="w-full mt-4 py-2 text-sm text-gray-500 hover:text-white">İptal</button>
+            
+            <button onclick="selectWalletProvider('phantom')" id="selectPhantomBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-3">
+                <img src="https://cryptologos.cc/logos/phantom-phantom-logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Phantom">
+                Phantom ile Bağlan
+            </button>
+            
+            <button onclick="closeModal('walletSelectModal')" class="mt-4 text-gray-400 hover:text-white transition text-sm">İptal</button>
         </div>
     </div>
 
     <script>
-        const CONFIG = {
-            treasury: "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE", 
-            cost: 0.05,
-            rpc: 'https://api.mainnet-beta.solana.com'
+        // === YAPILANDIRMA ===
+        const translations = {
+            tr: {
+                connect: "Cüzdan Bağla", 
+                disconnect: "Çıkış Yap",
+                spinBtnInit: "Önce Cüzdanı Bağla", 
+                spinBtnActive: "0.05 SOL ÖDE VE ÇEVİR",
+                spinBtnWaiting: "İşlem Onaylanıyor...", 
+                statusConnected: "Cüzdan bağlandı!",
+                statusConnectingError: "Bağlantı reddedildi veya hata oluştu.",
+                statusNoWallet: "Cüzdan bulunamadı! Lütfen Phantom veya Backpack yükleyin.",
+                statusPaymentConfirm: "Lütfen cüzdanınızdan işleme ONAY verin...",
+                statusPaymentSending: "İşlem gönderildi, ağ onayı bekleniyor...",
+                statusPaymentSuccess: "Ödeme Onaylandı! Çark dönüyor...",
+                statusPaymentRejected: "İşlem kullanıcı tarafından reddedildi.",
+                statusPaymentInsufficient: "Yetersiz SOL bakiyesi.",
+                statusPaymentError: "Hata:", 
+                statusDisconnected: "Bağlantı kesildi.",
+                modalTitle_win: "Tebrikler!", 
+                modalTitle_loss: "Bir Dahaki Sefere!",
+                modalTitle_huge_loss: "Eyvah!",
+                modalMessage_win_btc: "1 BTC Kazandın! İnanılmaz!",
+                modalMessage_near_miss: "Çok az farkla kaçırdın! Tekrar dene.",
+                modalMessage_huge_loss: "BÜYÜK KAYIP geldi!",
+            }
         };
+        
+        // --- AYARLAR ---
+        // Buraya paranın gideceği kendi cüzdan adresinizi yazın
+        const TREASURY_WALLET = "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE"; 
+        const SOL_AMOUNT = 0.05;
+        const RPC_URL = 'https://rpc.ankr.com/solana'; // Güvenilir Public RPC
 
-        const App = {
-            state: { isSpinning: false, isProcessing: false },
+        // === BAŞLANGIÇ ===
+        window.addEventListener('DOMContentLoaded', () => {
+            
+            let connection = null;
+            let provider = null;
+            let userPublicKey = null;
+            let isSpinning = false; 
+            let isProcessing = false; 
 
-            wallet: {
-                provider: null,
-                publicKey: null,
-                connection: null,
+            // DOM Elemanları
+            const connectWalletBtn = document.getElementById('connectWalletBtn');
+            const walletAddressSpan = document.getElementById('walletAddress');
+            const statusMsg = document.getElementById('statusMessage');
+            const spinBtn = document.getElementById('spinBtn');
+            const walletBalanceElement = document.getElementById('walletBalance');
 
-                init() {
-                    try { this.connection = new solanaWeb3.Connection(CONFIG.rpc, 'confirmed'); } catch(e){}
-                    
-                    const savedWallet = localStorage.getItem('connectedWallet');
-                    if (savedWallet) {
-                        // Sayfa tam yüklenince bağlanmayı dene
-                        if (document.readyState === 'complete') this.connect(savedWallet, true);
-                        else window.addEventListener('load', () => setTimeout(() => this.connect(savedWallet, true), 1000));
-                    }
-                },
+            // --- YARDIMCI FONKSİYONLAR ---
+            const getTranslation = (key) => translations.tr[key] || key;
 
-                getProvider(type) {
-                    if (type === 'phantom') {
-                        if (window.solana && window.solana.isPhantom) return window.solana;
-                        if (window.phantom?.solana) return window.phantom.solana;
-                    } 
-                    else if (type === 'backpack') return window.backpack;
-                    return null;
-                },
-
-                async connect(type, silent = false) {
-                    const provider = this.getProvider(type);
-
-                    if (!provider) {
-                        if (!silent) App.ui.toast(`${type} cüzdanı bulunamadı!`, "error");
-                        return;
-                    }
-
-                    try {
-                        const resp = await provider.connect({ onlyIfTrusted: silent });
-                        this.provider = provider;
-                        this.publicKey = resp.publicKey.toString();
-                        
-                        localStorage.setItem('connectedWallet', type);
-                        App.closeModal('modal-wallet');
-                        this.setupListeners(provider);
-                        App.ui.updateAuth(true, this.publicKey);
-                        this.getBalance();
-                        
-                        if (!silent) App.ui.toast("Cüzdan Bağlandı", "success");
-
-                    } catch (err) {
-                        if (!silent) {
-                            console.error("Connect Err:", err);
-                            App.ui.toast("Bağlantı hatası veya reddedildi.", "error");
-                        }
-                        if (silent) localStorage.removeItem('connectedWallet');
-                    }
-                },
-
-                async disconnect() {
-                    if (this.provider) try { await this.provider.disconnect(); } catch(e){}
-                    this.provider = null;
-                    this.publicKey = null;
-                    localStorage.removeItem('connectedWallet');
-                    App.ui.updateAuth(false);
-                },
-
-                setupListeners(provider) {
-                    provider.removeAllListeners?.('disconnect');
-                    provider.removeAllListeners?.('accountChanged');
-                    provider.on('disconnect', () => {
-                        this.disconnect();
-                        App.ui.toast("Cüzdan bağlantısı kesildi", "info");
-                    });
-                    provider.on('accountChanged', (pk) => {
-                        if (pk) {
-                            this.publicKey = pk.toString();
-                            App.ui.updateAuth(true, this.publicKey);
-                            this.getBalance();
-                        } else this.disconnect(); 
-                    });
-                },
-
-                async getBalance() {
-                    if (!this.publicKey || !this.connection) return;
-                    try {
-                        const bal = await this.connection.getBalance(new solanaWeb3.PublicKey(this.publicKey));
-                        App.ui.setBalance(bal / solanaWeb3.LAMPORTS_PER_SOL);
-                    } catch (e) {}
-                },
-
-                async payEntryFee() {
-                    if (!this.publicKey || !this.provider) return false;
-                    try {
-                        const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
-                        const tx = new solanaWeb3.Transaction({ feePayer: new solanaWeb3.PublicKey(this.publicKey), recentBlockhash: blockhash }).add(
-                            solanaWeb3.SystemProgram.transfer({
-                                fromPubkey: new solanaWeb3.PublicKey(this.publicKey),
-                                toPubkey: new solanaWeb3.PublicKey(CONFIG.treasury),
-                                lamports: Math.round(CONFIG.cost * solanaWeb3.LAMPORTS_PER_SOL)
-                            })
-                        );
-                        const { signature } = await this.provider.signAndSendTransaction(tx);
-                        App.ui.toast("İşlem onayı bekleniyor...", "info");
-                        
-                        const confirmation = await this.connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature }, 'confirmed');
-                        if (confirmation.value.err) throw new Error("Tx Failed");
-
-                        App.ui.toast("Ödeme Başarılı! Çark dönüyor...", "success");
-                        this.getBalance();
-                        return true;
-                    } catch (err) {
-                        console.error("Pay Err:", err);
-                        App.ui.toast("Ödeme başarısız oldu.", "error");
-                        return false;
-                    }
+            // Cüzdan Sağlayıcılarını Bulma
+            const getAvailableProviders = () => {
+                const providers = [];
+                // Backpack kontrolü
+                if (window.backpack) {
+                    providers.push({ id: 'backpack', name: 'Backpack', provider: window.backpack });
                 }
-            },
-
-            wheel: {
-                canvas: document.getElementById('wheel'),
-                ctx: null,
-                prizes: [
-                    { label: "1 BTC",   color: "#F7931A", type: "win" },
-                    { label: "KAYIP",    color: "#1F2937", type: "loss" },
-                    { label: "0.5 SOL", color: "#9945FF", type: "win", id: "SOL05" },
-                    { label: "KAYIP",    color: "#1F2937", type: "loss" },
-                    { label: "50 XRP",  color: "#3498DB", type: "win" },
-                    { label: "ŞANSSIZ", color: "#374151", type: "loss" },
-                    { label: "0.1 SOL", color: "#14F195", type: "win", id: "SOL01" },
-                    { label: "KAYIP",    color: "#1F2937", type: "loss" }
-                ],
-                rotation: 0,
-                
-                init() {
-                    this.ctx = this.canvas.getContext('2d');
-                    this.draw();
-                },
-
-                draw() {
-                    const ctx = this.ctx;
-                    const count = this.prizes.length;
-                    const arc = (2 * Math.PI) / count;
-                    const cx = this.canvas.width / 2;
-                    const cy = this.canvas.height / 2;
-                    const r = cx - 10;
-
-                    ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, cx-2, 0, 2*Math.PI);
-                    ctx.fillStyle = "#111";
-                    ctx.fill();
-
-                    this.prizes.forEach((p, i) => {
-                        const angle = i * arc;
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy);
-                        ctx.arc(cx, cy, r, angle, angle + arc);
-                        ctx.lineTo(cx, cy);
-                        const grad = ctx.createRadialGradient(cx, cy, 50, cx, cy, r);
-                        grad.addColorStop(0, p.color);
-                        grad.addColorStop(1, p.color); // Simplified gradient
-                        ctx.fillStyle = grad;
-                        ctx.fill();
-                        ctx.strokeStyle = "#0B0E14";
-                        ctx.lineWidth = 4;
-                        ctx.stroke();
-
-                        ctx.save();
-                        ctx.translate(cx, cy);
-                        ctx.rotate(angle + arc / 2);
-                        ctx.textAlign = "right";
-                        ctx.fillStyle = "#fff";
-                        ctx.font = "bold 24px Space Grotesk";
-                        ctx.fillText(p.label, r - 40, 8);
-                        ctx.restore();
-                    });
-                    this.canvas.style.transform = `rotate(${this.rotation * (180/Math.PI) - 90}deg)`;
-                },
-
-                async spin() {
-                    await App.audio.init();
-                    const rand = Math.random();
-                    let targetId = null;
-                    if(rand < 0.05) targetId = "SOL01";
-                    if(rand < 0.01) targetId = "SOL05";
-                    
-                    let winningIndices = [];
-                    this.prizes.forEach((p,i) => {
-                        if(targetId && p.id === targetId) winningIndices.push(i);
-                        if(!targetId && p.type === 'loss') winningIndices.push(i);
-                    });
-                    
-                    if(winningIndices.length === 0) winningIndices.push(1);
-                    const winIndex = winningIndices[Math.floor(Math.random() * winningIndices.length)];
-
-                    const arc = (2 * Math.PI) / this.prizes.length;
-                    const sliceAngle = (winIndex * arc) + (arc/2); 
-                    const cycles = 5 + Math.floor(Math.random() * 3);
-                    const targetRotation = this.rotation + (cycles * 2 * Math.PI) + ((2 * Math.PI) - sliceAngle);
-                    
-                    const duration = 6000;
-                    const startRot = this.rotation;
-                    const change = targetRotation - startRot;
-                    const startTime = performance.now();
-                    let lastTickSection = -1;
-
-                    const animate = (time) => {
-                        const elapsed = time - startTime;
-                        if(elapsed < duration) {
-                            const t = elapsed / duration;
-                            const t1 = t - 1;
-                            const ease = (t1 * t1 * t1 * t1 * t1 + 1);
-                            
-                            this.rotation = startRot + (change * ease);
-                            this.draw();
-                            
-                            const deg = (this.rotation * 180 / Math.PI) % 360;
-                            const section = Math.floor(deg / (360 / this.prizes.length));
-                            
-                            if (section !== lastTickSection) {
-                                App.audio.playTick();
-                                const needle = document.getElementById('stopper');
-                                needle.style.transform = "rotate(-20deg)";
-                                setTimeout(() => needle.style.transform = "rotate(0deg)", 50);
-                                lastTickSection = section;
-                            }
-                            requestAnimationFrame(animate);
-                        } else {
-                            this.rotation = targetRotation;
-                            this.draw();
-                            App.finishGame(this.prizes[winIndex]);
-                        }
-                    };
-                    requestAnimationFrame(animate);
+                // Phantom kontrolü
+                if (window.solana && window.solana.isPhantom) {
+                    providers.push({ id: 'phantom', name: 'Phantom', provider: window.solana });
                 }
-            },
+                return providers;
+            };
 
-            audio: {
-                synth: null,
-                init() { if (Tone.context.state !== 'running') return Tone.start(); },
-                playTick() {
-                    if(!this.synth) this.synth = new Tone.MembraneSynth().toDestination();
-                    this.synth.triggerAttackRelease("C2", "32n", Tone.now(), 0.5);
-                },
-                playWin() {
-                    const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-                    synth.triggerAttackRelease(["C4", "E4", "G4", "C5"], "8n", Tone.now());
-                },
-                playLoss() {
-                     const synth = new Tone.PluckSynth().toDestination();
-                     synth.triggerAttackRelease("C2", "8n");
-                }
-            },
-
-            ui: {
-                btn: document.getElementById('action-btn'),
-                walletText: document.getElementById('wallet-display'),
-                dot: document.getElementById('status-dot'),
-                bal: document.getElementById('balance-display'),
-                
-                updateAuth(connected, pubKey) {
-                    if (connected) {
-                        this.walletText.innerText = pubKey.slice(0,4) + '...' + pubKey.slice(-4);
-                        this.dot.classList.replace('bg-red-500', 'bg-green-500');
-                        this.dot.classList.add('shadow-[0_0_10px_#22c55e]');
-                        
-                        this.btn.innerText = "SPIN (0.05 SOL)";
-                        this.btn.onclick = () => App.startGame(); 
-                    } else {
-                        this.walletText.innerText = "Bağlı Değil";
-                        this.dot.classList.replace('bg-green-500', 'bg-red-500');
-                        this.dot.classList.remove('shadow-[0_0_10px_#22c55e]');
-                        this.bal.innerText = "-- SOL";
-                        
-                        this.btn.innerText = "Cüzdan Bağla";
-                        this.btn.onclick = () => App.openModal('modal-wallet');
-                    }
-                },
-                
-                setBalance(amount) { this.bal.innerText = amount.toFixed(3) + " SOL"; },
-
-                toast(msg, type = "info") {
-                    const c = document.getElementById('toast-container');
-                    const d = document.createElement('div');
-                    const colors = { success: "border-green-500", error: "border-red-500", info: "border-blue-500" };
-                    d.className = `toast glass px-4 py-3 rounded-xl border-l-4 ${colors[type]} flex items-center gap-3 min-w-[250px]`;
-                    d.innerHTML = `<span class="font-bold text-sm">${msg}</span>`;
-                    c.appendChild(d);
-                    setTimeout(() => d.remove(), 3500);
-                },
-
-                addHistory(prize) {
-                    const list = document.getElementById('history-list');
-                    if(list.children[0].innerText.includes("bekleniyor")) list.innerHTML = "";
-                    const div = document.createElement('div');
-                    const isWin = prize.type === 'win';
-                    div.className = "flex justify-between items-center p-2 rounded bg-white/5 border border-white/10 text-sm animate-pulse";
-                    div.innerHTML = `<span class="font-bold ${isWin ? 'text-green-400' : 'text-gray-500'}">${prize.label}</span><span class="text-xs text-gray-600">${new Date().toLocaleTimeString()}</span>`;
-                    setTimeout(() => div.classList.remove('animate-pulse'), 1000);
-                    list.insertBefore(div, list.firstChild);
-                }
-            },
-
-            async startGame() {
-                if (this.state.isSpinning || this.state.isProcessing) return;
-                this.state.isProcessing = true;
-                App.ui.btn.innerText = "Onaylanıyor...";
-                App.ui.btn.disabled = true;
-
-                const paid = await App.wallet.payEntryFee();
-                if (paid) {
-                    this.state.isProcessing = false;
-                    this.state.isSpinning = true;
-                    App.ui.btn.innerText = "Bol Şans!";
-                    this.wheel.spin();
+            const updateUI = (connected) => {
+                if (connected && userPublicKey) {
+                    const shortKey = userPublicKey.slice(0, 4) + '...' + userPublicKey.slice(-4);
+                    walletAddressSpan.innerText = shortKey + " (Çıkış)";
+                    spinBtn.innerText = getTranslation('spinBtnActive');
+                    spinBtn.disabled = false;
+                    spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    spinBtn.classList.add('cursor-pointer');
+                    connectWalletBtn.classList.replace('bg-purple-600', 'bg-red-600'); // Çıkış için kırmızıya dön
+                    statusMsg.innerText = getTranslation('statusConnected');
                 } else {
-                    this.state.isProcessing = false;
-                    App.ui.btn.disabled = false;
-                    App.ui.btn.innerText = "SPIN (0.05 SOL)";
+                    walletAddressSpan.innerText = getTranslation('connect');
+                    spinBtn.innerText = getTranslation('spinBtnInit');
+                    spinBtn.disabled = true;
+                    spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    spinBtn.classList.remove('cursor-pointer');
+                    connectWalletBtn.classList.replace('bg-red-600', 'bg-purple-600');
+                    connectWalletBtn.classList.replace('bg-green-600', 'bg-purple-600');
+                    walletBalanceElement.innerText = '-- SOL';
+                    statusMsg.innerText = "";
                 }
-            },
+            };
 
-            finishGame(prize) {
-                this.state.isSpinning = false;
-                App.ui.btn.disabled = false;
-                App.ui.btn.innerText = "TEKRAR DENE (0.05 SOL)";
-                App.ui.addHistory(prize);
+            // --- CÜZDAN MANTIĞI ---
+            window.selectWalletProvider = async (id) => {
+                window.closeModal('walletSelectModal');
+                let selectedProvider = null;
 
-                const mTitle = document.getElementById('modal-title');
-                const mDesc = document.getElementById('modal-desc');
-                const mEmoji = document.getElementById('modal-emoji');
+                if (id === 'backpack' && window.backpack) {
+                    selectedProvider = window.backpack;
+                } else if (id === 'phantom' && window.solana) {
+                    selectedProvider = window.solana;
+                }
+
+                if (selectedProvider) await connectToProvider(selectedProvider);
+            };
+
+            async function connectToProvider(selectedProvider) {
+                try {
+                    provider = selectedProvider;
+                    // Phantom ve Backpack genelde { onlyIfTrusted: false } ile tetiklenir
+                    const response = await provider.connect();
+                    
+                    // Public Key alma (Bazı cüzdanlar response.publicKey döner, bazıları direkt provider.publicKey)
+                    if (response && response.publicKey) {
+                        userPublicKey = response.publicKey.toString();
+                    } else if (provider.publicKey) {
+                        userPublicKey = provider.publicKey.toString();
+                    }
+                    
+                    // RPC Bağlantısı
+                    connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+                    
+                    // Bakiye Kontrolü
+                    await fetchBalance();
+                    updateUI(true);
+
+                    // Bağlantı koparsa dinle
+                    provider.on('disconnect', () => disconnectWallet());
+                    // Hesap değişirse dinle
+                    provider.on('accountChanged', (publicKey) => {
+                        if (publicKey) {
+                            userPublicKey = publicKey.toString();
+                            fetchBalance();
+                        } else {
+                            disconnectWallet(); // Key yoksa çıkış yap
+                        }
+                    });
+
+                } catch (err) {
+                    console.error("Bağlantı Hatası:", err);
+                    statusMsg.innerText = getTranslation('statusConnectingError');
+                }
+            }
+
+            async function disconnectWallet() {
+                if (provider) {
+                    try { await provider.disconnect(); } catch(e){}
+                }
+                provider = null;
+                userPublicKey = null;
+                connection = null;
+                updateUI(false);
+            }
+
+            async function fetchBalance() {
+                if (!connection || !userPublicKey) return;
+                try {
+                    const bal = await connection.getBalance(new solanaWeb3.PublicKey(userPublicKey));
+                    walletBalanceElement.innerText = `${(bal / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4)} SOL`;
+                } catch (e) {
+                    console.error("Bakiye Hatası:", e);
+                    walletBalanceElement.innerText = '-- SOL';
+                }
+            }
+
+            // --- BUTON TIKLAMA İŞLEMLERİ ---
+            connectWalletBtn.onclick = () => {
+                if (userPublicKey) {
+                    disconnectWallet();
+                } else {
+                    const providers = getAvailableProviders();
+                    if (providers.length === 0) {
+                        statusMsg.innerText = getTranslation('statusNoWallet');
+                        // Eğer hiçbiri yoksa yine de modal açalım, belki mobil tarayıcıdır
+                        window.openModal('walletSelectModal');
+                    } else if (providers.length === 1) {
+                        // Sadece biri varsa direkt bağlan
+                        connectToProvider(providers[0].provider);
+                    } else {
+                        // İkisi de varsa veya seçim gerekiyorsa Modal Aç
+                        window.openModal('walletSelectModal');
+                    }
+                }
+            };
+
+            spinBtn.onclick = async () => {
+                if (!provider || !userPublicKey || isSpinning || isProcessing) return;
+                
+                isProcessing = true;
+                spinBtn.disabled = true;
+                spinBtn.innerText = getTranslation('spinBtnWaiting');
+                
+                // Kullanıcıya bilgi ver
+                statusMsg.innerText = getTranslation('statusPaymentConfirm');
+                statusMsg.className = "h-6 text-yellow-400 font-bold text-center mb-4"; // Sarı renk uyarı
+
+                try {
+                    // Bağlantı kontrolü
+                    if (!connection) connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
+
+                    // 1. Transaction Oluştur
+                    const transaction = new solanaWeb3.Transaction().add(
+                        solanaWeb3.SystemProgram.transfer({
+                            fromPubkey: new solanaWeb3.PublicKey(userPublicKey),
+                            toPubkey: new solanaWeb3.PublicKey(TREASURY_WALLET),
+                            lamports: Math.floor(SOL_AMOUNT * solanaWeb3.LAMPORTS_PER_SOL)
+                        })
+                    );
+                    
+                    // 2. Blockhash Al (Güncel ağ durumu için gerekli)
+                    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+                    transaction.recentBlockhash = blockhash;
+                    transaction.feePayer = new solanaWeb3.PublicKey(userPublicKey);
+
+                    // 3. Cüzdandan İMZA İSTE (Popup açar)
+                    // Backpack ve Phantom bu metodu destekler
+                    const { signature } = await provider.signAndSendTransaction(transaction);
+                    
+                    statusMsg.innerText = getTranslation('statusPaymentSending');
+                    statusMsg.className = "h-6 text-blue-400 font-bold text-center mb-4";
+
+                    // 4. Onay Bekle
+                    const confirmation = await connection.confirmTransaction({
+                        signature,
+                        blockhash,
+                        lastValidBlockHeight
+                    });
+
+                    if (confirmation.value.err) throw new Error("İşlem ağda başarısız oldu.");
+
+                    statusMsg.innerText = getTranslation('statusPaymentSuccess');
+                    statusMsg.className = "h-6 text-green-400 font-bold text-center mb-4";
+                    
+                    // Bakiyeyi Güncelle
+                    fetchBalance();
+                    
+                    // OYUNU BAŞLAT
+                    await startSpinAnimation();
+
+                } catch (error) {
+                    console.error("Ödeme Hatası:", error);
+                    let msg = error.message || "Bilinmeyen Hata";
+                    
+                    // Hata mesajlarını kullanıcı dostu hale getir
+                    if (msg.includes("User rejected") || error.code === 4001) {
+                        msg = getTranslation('statusPaymentRejected');
+                    } else if (msg.includes("0x1")) {
+                        msg = getTranslation('statusPaymentInsufficient'); 
+                    } else if (msg.includes("403") || msg.includes("429")) {
+                        msg = "Ağ yoğun (RPC Hatası). Lütfen tekrar deneyin.";
+                    }
+
+                    statusMsg.innerText = `${getTranslation('statusPaymentError')} ${msg}`;
+                    statusMsg.className = "h-6 text-red-500 font-bold text-center mb-4";
+                } finally {
+                    isProcessing = false;
+                    // Eğer çark dönmüyorsa butonu tekrar aktif et
+                    if (!isSpinning) {
+                         spinBtn.disabled = false;
+                         spinBtn.innerText = getTranslation('spinBtnActive');
+                    }
+                }
+            };
+
+            // --- OYUN MANTIĞI (ÇARK) ---
+            const canvas = document.getElementById('wheelCanvas');
+            const ctx = canvas.getContext('2d');
+            // Örnek basit havuz (0.5 SOL için sayaç)
+            const prizePool = { SOL_05: { max: 5, current: 0 } }; 
+            
+            // Ödül Listesi
+            const prizes = [
+                { text: "1 BTC", type: 'win', color: "#f7931a", txt: "#fff" }, 
+                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "0.5 SOL", type: 'win', id: 'SOL_05', color: "#9945FF", txt: "#fff" },   
+                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "50 XRP", type: 'win', color: "#2596be", txt: "#fff" }, 
+                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "BÜYÜK KAYIP", type: 'huge_loss', color: "#881337", txt: "#fff" }, 
+                { text: "0.01 ETH", type: 'win', color: "#627eea", txt: "#fff" },
+                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "200 DOGE", type: 'win', color: "#C2A633", txt: "#fff" }, 
+                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "50 USDT", type: 'win', color: "#26a17b", txt: "#fff" },
+                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "0.1 SOL", type: 'win', id: 'SOL_SMALL', color: "#14F195", txt: "#000" }
+            ];
+
+            const totalPrizes = prizes.length;
+            const sliceDeg = 360 / totalPrizes;
+            let currentRotation = 0;
+
+            function drawWheel() {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const r = cx;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                prizes.forEach((prize, i) => {
+                    const angle = (i * 2 * Math.PI) / totalPrizes;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, angle, angle + (2 * Math.PI) / totalPrizes);
+                    ctx.lineTo(cx, cy);
+                    
+                    const grad = ctx.createRadialGradient(cx, cy, r*0.1, cx, cy, r);
+                    grad.addColorStop(0, prize.color);
+                    grad.addColorStop(1, '#000');
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(angle + (Math.PI / totalPrizes));
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = prize.txt;
+                    ctx.font = "bold 16px Montserrat";
+                    ctx.fillText(prize.text, r - 25, 5);
+                    ctx.restore();
+                });
+            }
+
+            async function startSpinAnimation() {
+                isSpinning = true;
+                spinBtn.disabled = true;
+
+                // Ses Efekti (İsteğe bağlı)
+                if (window.Tone) {
+                    try {
+                        if (Tone.context.state !== 'running') await Tone.start();
+                        const synth = new Tone.NoiseSynth({ envelope: { release: 4 } }).toDestination();
+                        synth.triggerAttackRelease("2n");
+                    } catch(e) { console.log("Ses hatası (önemsiz):", e); }
+                }
+
+                // --- KAZANMA MANTIĞI ---
+                // Gerçek bir kumar uygulaması için bu mantık sunucuda (backend) olmalıdır.
+                // İstemci tarafında yapılan işlemler manipüle edilebilir.
+                const rnd = Math.random();
+                let targetId = null;
+                
+                // %1 ihtimalle 0.5 SOL, %10 ihtimalle 0.1 SOL
+                if (rnd < 0.01) targetId = 'SOL_05';
+                else if (rnd < 0.10) targetId = 'SOL_SMALL';
+
+                let targets = [];
+                prizes.forEach((p, i) => {
+                    if (targetId && p.id === targetId) {
+                        if (targetId === 'SOL_05' && prizePool.SOL_05.current >= prizePool.SOL_05.max) return;
+                        targets.push(i);
+                    }
+                    else if (!targetId && (p.type === 'miss' || p.type === 'loss' || p.type === 'huge_loss')) {
+                        targets.push(i);
+                    }
+                });
+                
+                if (targets.length === 0) targets.push(1); // Varsayılan boş
+                const winnerIndex = targets[Math.floor(Math.random() * targets.length)];
+                
+                // Dönüş hesaplaması
+                const targetAngle = (winnerIndex * sliceDeg) + (sliceDeg/2);
+                let rot = targetAngle + 90; 
+                rot += (Math.random() * (sliceDeg-10)) - (sliceDeg/2 - 5); 
+                
+                const spinAngle = (5 * 360) + (rot - (currentRotation % 360)); 
+                if (spinAngle < 0) spinAngle += 360;
+
+                currentRotation += spinAngle;
+                canvas.style.transform = `rotate(-${currentRotation}deg)`;
+
+                // Dönüş bittiğinde
+                setTimeout(() => {
+                    isSpinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.innerText = getTranslation('spinBtnActive');
+                    
+                    const winPrize = prizes[winnerIndex];
+                    if (winPrize.id === 'SOL_05') prizePool.SOL_05.current++;
+
+                    showResult(winPrize);
+                }, 5000); // 5 saniye animasyon süresi
+            }
+
+            function showResult(prize) {
+                const title = document.getElementById('modalTitle');
+                const msg = document.getElementById('modalMessage');
+                const icon = document.getElementById('modalIcon');
                 
                 if (prize.type === 'win') {
-                    App.audio.playWin();
-                    mTitle.innerText = "KAZANDIN!";
-                    mTitle.className = "text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600 mb-2";
-                    mDesc.innerText = `${prize.label} kazandın!`;
-                    mEmoji.innerText = "🤑";
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                } else {
-                    App.audio.playLoss();
-                    mTitle.innerText = "Şanssız Gün...";
-                    mTitle.className = "text-2xl font-bold text-gray-300 mb-2";
-                    mDesc.innerText = "Tekrar dene!";
-                    mEmoji.innerText = "📉";
-                }
-                setTimeout(() => App.openModal('modal-result'), 500);
-            },
+                    title.innerText = getTranslation('modalTitle_win');
+                    msg.innerText = prize.text + " Kazandın!";
+                    icon.innerText = "🎉";
+                    
+                    // Konfeti patlat
+                    var d = 1500; var end = Date.now() + d;
+                    (function frame() {
+                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    }());
 
-            openModal(id) {
+                } else {
+                    title.innerText = getTranslation('modalTitle_loss');
+                    msg.innerText = prize.text;
+                    icon.innerText = "😢";
+                }
+                
+                window.openModal('resultModal');
+            }
+
+            // İlk çizim
+            drawWheel();
+
+            // Modal Yardımcıları
+            window.openModal = (id) => {
                 const m = document.getElementById(id);
                 m.classList.remove('hidden');
-                setTimeout(() => { m.classList.remove('opacity-0'); m.querySelector('div').classList.replace('scale-90','scale-100'); }, 10);
-            },
-            closeModal(id) {
+                setTimeout(() => {
+                    m.classList.remove('opacity-0');
+                    m.querySelector('div').classList.replace('scale-90','scale-100');
+                },10);
+            }
+            window.closeModal = (id) => {
                 const m = document.getElementById(id);
                 m.classList.add('opacity-0');
                 m.querySelector('div').classList.replace('scale-100','scale-90');
                 setTimeout(() => m.classList.add('hidden'), 300);
             }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => {
-            App.wheel.init();
-            App.wallet.init();
-            
-            // DÜZELTME: Butonların event listener'ları atansın diye başlangıç state'ini set et
-            if (!localStorage.getItem('connectedWallet')) {
-                App.ui.updateAuth(false);
-            }
-            window.App = App;
         });
     </script>
 </body>
