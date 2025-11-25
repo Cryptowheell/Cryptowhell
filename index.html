@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="appTitle">Solana Çarkıfelek - Şansını Dene</title>
+    <title id="appTitle">Solana Spin Wheel - Try Your Luck</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <!-- Confetti Efekti -->
+    <!-- Confetti Effect -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Tone.js (Ses Efektleri) -->
+    <!-- Tone.js (Sound Effects) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
@@ -107,32 +107,32 @@
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- Cüzdan Bakiyesi -->
+    <!-- Wallet Balance -->
     <div id="balanceContainer" class="absolute top-4 left-4 z-50 text-right">
-        <p class="text-sm font-semibold text-gray-300">Bakiye:</p>
+        <p class="text-sm font-semibold text-gray-300">Balance:</p>
         <p class="text-xl font-bold text-green-300" id="walletBalance">-- SOL</p>
     </div>
 
-    <!-- Cüzdan Bağla Butonu -->
+    <!-- Connect Wallet Button -->
     <div class="absolute top-4 right-4 z-50">
         <button id="connectWalletBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition shadow-lg border border-purple-500 flex items-center gap-2">
             <svg id="walletIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6">
                 <path d="M19.34 4.8C18.42 3.86 17.18 3.29 15.82 3.29H7.13C4.24 3.29 1.9 5.63 1.9 8.52V15.48C1.9 18.37 4.24 20.71 7.13 20.71H15.82C17.18 20.71 18.42 20.14 19.34 19.2C20.26 18.26 20.83 16.98 20.83 15.58V8.42C20.83 7.02 20.26 5.74 19.34 4.8ZM14.07 15.34C13.25 15.34 12.58 14.67 12.58 13.85C12.58 13.03 13.25 12.36 14.07 12.36C14.89 12.36 15.56 13.03 15.56 13.85C15.56 14.67 14.89 15.34 14.07 15.34ZM17.93 11.48C17.11 11.48 16.44 10.81 16.44 9.99C16.44 9.17 17.11 8.5 17.93 8.5C18.75 8.5 19.42 9.17 19.42 9.99C19.42 10.81 18.75 11.48 17.93 11.48Z" fill="white"/>
             </svg>
-            <span id="walletAddress">Cüzdan Bağla</span>
+            <span id="walletAddress">Connect Wallet</span>
         </button>
     </div>
 
-    <!-- Başlık -->
+    <!-- Title -->
     <div class="text-center mb-8 relative z-10 mt-12 md:mt-0">
         <h1 id="mainTitle" class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-green-300 to-purple-500 uppercase tracking-wider drop-shadow-sm">
-            Şansını Dene
+            Try Your Luck
         </h1>
-        <p id="subTitle" class="text-purple-200 mt-2 font-medium">0.05 SOL Öde, Çarkı Çevir!</p>
-        <p class="text-xs text-yellow-300 mt-2 font-semibold">NOT: Tüm ödüller SOL (Solana) olarak ödenir.</p>
+        <p id="subTitle" class="text-purple-200 mt-2 font-medium">Pay 0.05 SOL, Spin the Wheel!</p>
+        <p class="text-xs text-yellow-300 mt-2 font-semibold">NOTE: All prizes are paid in SOL.</p>
     </div>
 
-    <!-- Çark Alanı -->
+    <!-- Wheel Area -->
     <div class="relative mb-10">
         <div class="stopper"></div>
         <div class="wheel-container bg-gray-800">
@@ -141,79 +141,80 @@
         </div>
     </div>
 
-    <!-- Durum Mesajı -->
+    <!-- Status Message -->
     <div id="statusMessage" class="h-6 text-green-400 font-bold text-center mb-4 transition-all duration-300"></div>
 
-    <!-- Çevirme Butonu -->
+    <!-- Spin Button -->
     <button id="spinBtn" class="spin-btn px-12 py-4 rounded-full text-xl md:text-2xl font-black uppercase tracking-widest outline-none opacity-50 cursor-not-allowed" disabled>
-        Önce Cüzdanı Bağla
+        Connect Wallet First
     </button>
 
-    <!-- Sonuç Modalı -->
+    <!-- Result Modal -->
     <div id="resultModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-gray-900 border border-purple-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="resultModalContent">
             <div id="modalIcon" class="text-6xl mb-4">🎉</div>
-            <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2">Başlık</h2>
-            <p id="modalMessage" class="text-xl text-yellow-400 font-bold mb-6">Mesaj</p>
-            <button onclick="closeModal('resultModal')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition">Tekrar Dene</button>
+            <h2 id="modalTitle" class="text-3xl font-bold text-white mb-2">Title</h2>
+            <p id="modalMessage" class="text-xl text-yellow-400 font-bold mb-6">Message</p>
+            <button onclick="closeModal('resultModal')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition">Try Again</button>
         </div>
     </div>
     
-    <!-- Cüzdan Seçim Modalı -->
+    <!-- Wallet Selection Modal -->
     <div id="walletSelectModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
         <div class="bg-gray-800 border border-green-500 p-8 rounded-3xl text-center max-w-sm mx-4 shadow-2xl transform scale-90 transition-transform duration-300" id="walletModalContent">
-            <h2 class="text-2xl font-bold text-white mb-6">Cüzdan Seç</h2>
-            <p class="text-gray-300 mb-6">Bağlanmak istediğin cüzdanı seç.</p>
+            <h2 class="text-2xl font-bold text-white mb-6">Select Wallet</h2>
+            <p class="text-gray-300 mb-6">Choose a wallet to connect.</p>
             
             <button onclick="selectWalletProvider('backpack')" id="selectBackpackBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition mb-4 flex items-center justify-center gap-3">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Backpack_Logo.png/640px-Backpack_Logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Backpack">
-                Backpack ile Bağlan
+                Connect Backpack
             </button>
             
             <button onclick="selectWalletProvider('phantom')" id="selectPhantomBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-3">
                 <img src="https://cryptologos.cc/logos/phantom-phantom-logo.png" class="w-6 h-6 rounded-full bg-white p-0.5" alt="Phantom">
-                Phantom ile Bağlan
+                Connect Phantom
             </button>
             
-            <button onclick="closeModal('walletSelectModal')" class="mt-4 text-gray-400 hover:text-white transition text-sm">İptal</button>
+            <button onclick="closeModal('walletSelectModal')" class="mt-4 text-gray-400 hover:text-white transition text-sm">Cancel</button>
         </div>
     </div>
 
     <script>
-        // === YAPILANDIRMA ===
+        // === CONFIGURATION ===
         const translations = {
-            tr: {
-                connect: "Cüzdan Bağla", 
-                disconnect: "Çıkış Yap",
-                spinBtnInit: "Önce Cüzdanı Bağla", 
-                spinBtnActive: "0.05 SOL ÖDE VE ÇEVİR",
-                spinBtnWaiting: "İşlem Onaylanıyor...", 
-                statusConnected: "Cüzdan bağlandı!",
-                statusConnectingError: "Bağlantı reddedildi veya hata oluştu.",
-                statusNoWallet: "Cüzdan bulunamadı! Lütfen Phantom veya Backpack yükleyin.",
-                statusPaymentConfirm: "Lütfen cüzdanınızdan işleme ONAY verin...",
-                statusPaymentSending: "İşlem gönderildi, ağ onayı bekleniyor...",
-                statusPaymentSuccess: "Ödeme Onaylandı! Çark dönüyor...",
-                statusPaymentRejected: "İşlem kullanıcı tarafından reddedildi.",
-                statusPaymentInsufficient: "Yetersiz SOL bakiyesi.",
-                statusPaymentError: "Hata:", 
-                statusDisconnected: "Bağlantı kesildi.",
-                modalTitle_win: "Tebrikler!", 
-                modalTitle_loss: "Bir Dahaki Sefere!",
-                modalTitle_huge_loss: "Eyvah!",
-                modalMessage_win_btc: "1 BTC Kazandın! İnanılmaz!",
-                modalMessage_near_miss: "Çok az farkla kaçırdın! Tekrar dene.",
-                modalMessage_huge_loss: "BÜYÜK KAYIP geldi!",
+            en: {
+                connect: "Connect Wallet", 
+                disconnect: "Disconnect",
+                spinBtnInit: "Connect Wallet First", 
+                spinBtnActive: "PAY 0.05 SOL AND SPIN",
+                spinBtnWaiting: "Confirming Transaction...", 
+                statusConnected: "Wallet connected!",
+                statusConnectingError: "Connection rejected or error occurred.",
+                statusNoWallet: "Wallet not found! Please install Phantom or Backpack.",
+                statusPaymentConfirm: "Please CONFIRM the transaction in your wallet...",
+                statusPaymentSending: "Transaction sent, awaiting network confirmation...",
+                statusPaymentSuccess: "Payment Confirmed! Wheel is spinning...",
+                statusPaymentRejected: "Transaction rejected by user.",
+                statusPaymentInsufficient: "Insufficient SOL balance.",
+                statusPaymentError: "Error:", 
+                statusDisconnected: "Disconnected.",
+                modalTitle_win: "Congratulations!", 
+                modalTitle_loss: "Better Luck Next Time!",
+                modalTitle_huge_loss: "Ouch!",
+                modalMessage_win_btc: "You won 1 BTC! Amazing!",
+                modalMessage_near_miss: "Missed by a hair! Try again.",
+                modalMessage_huge_loss: "HUGE LOSS!",
             }
         };
         
-        // --- AYARLAR ---
-        // Buraya paranın gideceği kendi cüzdan adresinizi yazın
+        // --- SETTINGS ---
+        // Enter your treasury wallet address here
         const TREASURY_WALLET = "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE"; 
         const SOL_AMOUNT = 0.05;
-        const RPC_URL = 'https://rpc.ankr.com/solana'; // Güvenilir Public RPC
+        // Using mainnet-beta api, if this fails due to rate limit, try 'https://rpc.ankr.com/solana' again
+        const RPC_URL = 'https://api.mainnet-beta.solana.com'; 
 
-        // === BAŞLANGIÇ ===
+        // === INITIALIZATION ===
         window.addEventListener('DOMContentLoaded', () => {
             
             let connection = null;
@@ -222,24 +223,24 @@
             let isSpinning = false; 
             let isProcessing = false; 
 
-            // DOM Elemanları
+            // DOM Elements
             const connectWalletBtn = document.getElementById('connectWalletBtn');
             const walletAddressSpan = document.getElementById('walletAddress');
             const statusMsg = document.getElementById('statusMessage');
             const spinBtn = document.getElementById('spinBtn');
             const walletBalanceElement = document.getElementById('walletBalance');
 
-            // --- YARDIMCI FONKSİYONLAR ---
-            const getTranslation = (key) => translations.tr[key] || key;
+            // --- HELPER FUNCTIONS ---
+            const getTranslation = (key) => translations.en[key] || key;
 
-            // Cüzdan Sağlayıcılarını Bulma
+            // Find Wallet Providers
             const getAvailableProviders = () => {
                 const providers = [];
-                // Backpack kontrolü
+                // Check Backpack
                 if (window.backpack) {
                     providers.push({ id: 'backpack', name: 'Backpack', provider: window.backpack });
                 }
-                // Phantom kontrolü
+                // Check Phantom
                 if (window.solana && window.solana.isPhantom) {
                     providers.push({ id: 'phantom', name: 'Phantom', provider: window.solana });
                 }
@@ -249,12 +250,12 @@
             const updateUI = (connected) => {
                 if (connected && userPublicKey) {
                     const shortKey = userPublicKey.slice(0, 4) + '...' + userPublicKey.slice(-4);
-                    walletAddressSpan.innerText = shortKey + " (Çıkış)";
+                    walletAddressSpan.innerText = shortKey + " (Logout)";
                     spinBtn.innerText = getTranslation('spinBtnActive');
                     spinBtn.disabled = false;
                     spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     spinBtn.classList.add('cursor-pointer');
-                    connectWalletBtn.classList.replace('bg-purple-600', 'bg-red-600'); // Çıkış için kırmızıya dön
+                    connectWalletBtn.classList.replace('bg-purple-600', 'bg-red-600'); // Turn red for logout
                     statusMsg.innerText = getTranslation('statusConnected');
                 } else {
                     walletAddressSpan.innerText = getTranslation('connect');
@@ -269,7 +270,7 @@
                 }
             };
 
-            // --- CÜZDAN MANTIĞI ---
+            // --- WALLET LOGIC ---
             window.selectWalletProvider = async (id) => {
                 window.closeModal('walletSelectModal');
                 let selectedProvider = null;
@@ -286,37 +287,37 @@
             async function connectToProvider(selectedProvider) {
                 try {
                     provider = selectedProvider;
-                    // Phantom ve Backpack genelde { onlyIfTrusted: false } ile tetiklenir
+                    // Connect to wallet
                     const response = await provider.connect();
                     
-                    // Public Key alma (Bazı cüzdanlar response.publicKey döner, bazıları direkt provider.publicKey)
+                    // Get Public Key
                     if (response && response.publicKey) {
                         userPublicKey = response.publicKey.toString();
                     } else if (provider.publicKey) {
                         userPublicKey = provider.publicKey.toString();
                     }
                     
-                    // RPC Bağlantısı
+                    // RPC Connection
                     connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
                     
-                    // Bakiye Kontrolü
+                    // Check Balance
                     await fetchBalance();
                     updateUI(true);
 
-                    // Bağlantı koparsa dinle
+                    // Listen for disconnect
                     provider.on('disconnect', () => disconnectWallet());
-                    // Hesap değişirse dinle
+                    // Listen for account change
                     provider.on('accountChanged', (publicKey) => {
                         if (publicKey) {
                             userPublicKey = publicKey.toString();
                             fetchBalance();
                         } else {
-                            disconnectWallet(); // Key yoksa çıkış yap
+                            disconnectWallet(); // Logout if no key
                         }
                     });
 
                 } catch (err) {
-                    console.error("Bağlantı Hatası:", err);
+                    console.error("Connection Error:", err);
                     statusMsg.innerText = getTranslation('statusConnectingError');
                 }
             }
@@ -337,12 +338,13 @@
                     const bal = await connection.getBalance(new solanaWeb3.PublicKey(userPublicKey));
                     walletBalanceElement.innerText = `${(bal / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4)} SOL`;
                 } catch (e) {
-                    console.error("Bakiye Hatası:", e);
+                    console.error("Balance Error:", e);
                     walletBalanceElement.innerText = '-- SOL';
+                    // Don't show alert here to avoid spamming the user on load
                 }
             }
 
-            // --- BUTON TIKLAMA İŞLEMLERİ ---
+            // --- BUTTON ACTIONS ---
             connectWalletBtn.onclick = () => {
                 if (userPublicKey) {
                     disconnectWallet();
@@ -350,13 +352,13 @@
                     const providers = getAvailableProviders();
                     if (providers.length === 0) {
                         statusMsg.innerText = getTranslation('statusNoWallet');
-                        // Eğer hiçbiri yoksa yine de modal açalım, belki mobil tarayıcıdır
+                        // Show modal anyway just in case
                         window.openModal('walletSelectModal');
                     } else if (providers.length === 1) {
-                        // Sadece biri varsa direkt bağlan
+                        // Connect directly if only one provider
                         connectToProvider(providers[0].provider);
                     } else {
-                        // İkisi de varsa veya seçim gerekiyorsa Modal Aç
+                        // Show modal if multiple providers
                         window.openModal('walletSelectModal');
                     }
                 }
@@ -369,15 +371,15 @@
                 spinBtn.disabled = true;
                 spinBtn.innerText = getTranslation('spinBtnWaiting');
                 
-                // Kullanıcıya bilgi ver
+                // Inform user
                 statusMsg.innerText = getTranslation('statusPaymentConfirm');
-                statusMsg.className = "h-6 text-yellow-400 font-bold text-center mb-4"; // Sarı renk uyarı
+                statusMsg.className = "h-6 text-yellow-400 font-bold text-center mb-4"; 
 
                 try {
-                    // Bağlantı kontrolü
+                    // Check connection
                     if (!connection) connection = new solanaWeb3.Connection(RPC_URL, 'confirmed');
 
-                    // 1. Transaction Oluştur
+                    // 1. Create Transaction
                     const transaction = new solanaWeb3.Transaction().add(
                         solanaWeb3.SystemProgram.transfer({
                             fromPubkey: new solanaWeb3.PublicKey(userPublicKey),
@@ -386,54 +388,53 @@
                         })
                     );
                     
-                    // 2. Blockhash Al (Güncel ağ durumu için gerekli)
+                    // 2. Get Blockhash
                     const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
                     transaction.recentBlockhash = blockhash;
                     transaction.feePayer = new solanaWeb3.PublicKey(userPublicKey);
 
-                    // 3. Cüzdandan İMZA İSTE (Popup açar)
-                    // Backpack ve Phantom bu metodu destekler
+                    // 3. Request Signature from Wallet (Popup)
                     const { signature } = await provider.signAndSendTransaction(transaction);
                     
                     statusMsg.innerText = getTranslation('statusPaymentSending');
                     statusMsg.className = "h-6 text-blue-400 font-bold text-center mb-4";
 
-                    // 4. Onay Bekle
+                    // 4. Wait for Confirmation
                     const confirmation = await connection.confirmTransaction({
                         signature,
                         blockhash,
                         lastValidBlockHeight
                     });
 
-                    if (confirmation.value.err) throw new Error("İşlem ağda başarısız oldu.");
+                    if (confirmation.value.err) throw new Error("Transaction failed on network.");
 
                     statusMsg.innerText = getTranslation('statusPaymentSuccess');
                     statusMsg.className = "h-6 text-green-400 font-bold text-center mb-4";
                     
-                    // Bakiyeyi Güncelle
+                    // Update Balance
                     fetchBalance();
                     
-                    // OYUNU BAŞLAT
+                    // START GAME
                     await startSpinAnimation();
 
                 } catch (error) {
-                    console.error("Ödeme Hatası:", error);
-                    let msg = error.message || "Bilinmeyen Hata";
+                    console.error("Payment Error:", error);
+                    let msg = error.message || "Unknown Error";
                     
-                    // Hata mesajlarını kullanıcı dostu hale getir
+                    // Make error messages user friendly
                     if (msg.includes("User rejected") || error.code === 4001) {
                         msg = getTranslation('statusPaymentRejected');
                     } else if (msg.includes("0x1")) {
                         msg = getTranslation('statusPaymentInsufficient'); 
-                    } else if (msg.includes("403") || msg.includes("429")) {
-                        msg = "Ağ yoğun (RPC Hatası). Lütfen tekrar deneyin.";
+                    } else if (msg.includes("403") || msg.includes("429") || msg.includes("Network request failed")) {
+                        msg = "Network busy (RPC Error). Please try again later.";
                     }
 
                     statusMsg.innerText = `${getTranslation('statusPaymentError')} ${msg}`;
                     statusMsg.className = "h-6 text-red-500 font-bold text-center mb-4";
                 } finally {
                     isProcessing = false;
-                    // Eğer çark dönmüyorsa butonu tekrar aktif et
+                    // Enable button if not spinning
                     if (!isSpinning) {
                          spinBtn.disabled = false;
                          spinBtn.innerText = getTranslation('spinBtnActive');
@@ -441,33 +442,32 @@
                 }
             };
 
-            // --- OYUN MANTIĞI (ÇARK) ---
+            // --- GAME LOGIC (WHEEL) ---
             const canvas = document.getElementById('wheelCanvas');
             const ctx = canvas.getContext('2d');
-            // Örnek basit havuz (0.5 SOL için sayaç)
             const prizePool = { SOL_05: { max: 5, current: 0 } }; 
             
-            // Ödül Listesi
+            // Prize List
             const prizes = [
                 { text: "1 BTC", type: 'win', color: "#f7931a", txt: "#fff" }, 
-                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
                 { text: "0.5 SOL", type: 'win', id: 'SOL_05', color: "#9945FF", txt: "#fff" },   
-                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
                 { text: "50 XRP", type: 'win', color: "#2596be", txt: "#fff" }, 
-                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
-                { text: "BÜYÜK KAYIP", type: 'huge_loss', color: "#881337", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "HUGE LOSS", type: 'huge_loss', color: "#881337", txt: "#fff" }, 
                 { text: "0.01 ETH", type: 'win', color: "#627eea", txt: "#fff" },
-                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
                 { text: "200 DOGE", type: 'win', color: "#C2A633", txt: "#fff" }, 
-                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
                 { text: "50 USDT", type: 'win', color: "#26a17b", txt: "#fff" },
-                { text: "BOŞ", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
-                { text: "KÜÇÜK KAYIP", type: 'loss', color: "#64748b", txt: "#fff" }, 
-                { text: "BOŞ", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
+                { text: "EMPTY", type: 'miss', color: "#334155", txt: "#94a3b8" }, 
+                { text: "SMALL LOSS", type: 'loss', color: "#64748b", txt: "#fff" }, 
+                { text: "EMPTY", type: 'miss', color: "#1e293b", txt: "#64748b" }, 
                 { text: "0.1 SOL", type: 'win', id: 'SOL_SMALL', color: "#14F195", txt: "#000" }
             ];
 
@@ -509,22 +509,22 @@
                 isSpinning = true;
                 spinBtn.disabled = true;
 
-                // Ses Efekti (İsteğe bağlı)
+                // Sound Effect (Optional)
                 if (window.Tone) {
                     try {
                         if (Tone.context.state !== 'running') await Tone.start();
                         const synth = new Tone.NoiseSynth({ envelope: { release: 4 } }).toDestination();
                         synth.triggerAttackRelease("2n");
-                    } catch(e) { console.log("Ses hatası (önemsiz):", e); }
+                    } catch(e) { console.log("Sound error (minor):", e); }
                 }
 
-                // --- KAZANMA MANTIĞI ---
-                // Gerçek bir kumar uygulaması için bu mantık sunucuda (backend) olmalıdır.
-                // İstemci tarafında yapılan işlemler manipüle edilebilir.
+                // --- WIN LOGIC ---
+                // For a real gambling app, this logic must be on the server (backend).
+                // Client-side logic can be manipulated.
                 const rnd = Math.random();
                 let targetId = null;
                 
-                // %1 ihtimalle 0.5 SOL, %10 ihtimalle 0.1 SOL
+                // 1% chance 0.5 SOL, 10% chance 0.1 SOL
                 if (rnd < 0.01) targetId = 'SOL_05';
                 else if (rnd < 0.10) targetId = 'SOL_SMALL';
 
@@ -539,10 +539,10 @@
                     }
                 });
                 
-                if (targets.length === 0) targets.push(1); // Varsayılan boş
+                if (targets.length === 0) targets.push(1); // Default miss
                 const winnerIndex = targets[Math.floor(Math.random() * targets.length)];
                 
-                // Dönüş hesaplaması
+                // Rotation calc
                 const targetAngle = (winnerIndex * sliceDeg) + (sliceDeg/2);
                 let rot = targetAngle + 90; 
                 rot += (Math.random() * (sliceDeg-10)) - (sliceDeg/2 - 5); 
@@ -553,7 +553,7 @@
                 currentRotation += spinAngle;
                 canvas.style.transform = `rotate(-${currentRotation}deg)`;
 
-                // Dönüş bittiğinde
+                // When spin ends
                 setTimeout(() => {
                     isSpinning = false;
                     spinBtn.disabled = false;
@@ -563,7 +563,7 @@
                     if (winPrize.id === 'SOL_05') prizePool.SOL_05.current++;
 
                     showResult(winPrize);
-                }, 5000); // 5 saniye animasyon süresi
+                }, 5000); // 5 seconds animation
             }
 
             function showResult(prize) {
@@ -573,10 +573,10 @@
                 
                 if (prize.type === 'win') {
                     title.innerText = getTranslation('modalTitle_win');
-                    msg.innerText = prize.text + " Kazandın!";
+                    msg.innerText = "You won " + prize.text + "!";
                     icon.innerText = "🎉";
                     
-                    // Konfeti patlat
+                    // Confetti
                     var d = 1500; var end = Date.now() + d;
                     (function frame() {
                         confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
@@ -593,10 +593,10 @@
                 window.openModal('resultModal');
             }
 
-            // İlk çizim
+            // Initial Draw
             drawWheel();
 
-            // Modal Yardımcıları
+            // Modal Helpers
             window.openModal = (id) => {
                 const m = document.getElementById(id);
                 m.classList.remove('hidden');
