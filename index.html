@@ -197,9 +197,10 @@
         const TREASURY_WALLET = "DAwS12Yo6sF5isULcCQ24rhU67J7vHjRHsH5TjfYerFE"; 
         const SOL_AMOUNT = 0.05;
         
-        // --- DÜZELTME: DAHA KARARLI BİR RPC URL'Sİ ---
-        // Helius mainnet yerine daha açık ve genellikle ücretsiz erişim sağlayan Ankr Public RPC kullanıyoruz.
-        const RPC_URL = 'https://rpc.ankr.com/solana'; 
+        // --- DÜZELTME YAPILDI: Daha güvenilir resmi endpoint ---
+        // Ankr bazen rate limit (429) veriyor. Resmi Solana API daha yavaş olabilir ama daha standarttır.
+        // Alternatif: 'https://solana-mainnet.rpc.extrnode.com' veya 'https://rpc.ankr.com/solana'
+        const RPC_URL = 'https://api.mainnet-beta.solana.com'; 
 
         // === INITIALIZATION ===
         window.addEventListener('DOMContentLoaded', () => {
@@ -341,8 +342,18 @@
                         })
                     );
                     
-                    const { blockhash } = await connection.getLatestBlockhash();
-                    tx.recentBlockhash = blockhash;
+                    // Blockhash alırken retry mekanizması
+                    let blockhashObj;
+                    try {
+                         blockhashObj = await connection.getLatestBlockhash('confirmed');
+                    } catch(e) {
+                        console.warn("Retrying blockhash...");
+                        // Basit bir retry - alternatif RPC veya tekrar deneme
+                        await new Promise(r => setTimeout(r, 1000));
+                        blockhashObj = await connection.getLatestBlockhash('confirmed');
+                    }
+                    
+                    tx.recentBlockhash = blockhashObj.blockhash;
                     tx.feePayer = new solanaWeb3.PublicKey(userPublicKey);
 
                     const { signature } = await provider.signAndSendTransaction(tx);
@@ -365,7 +376,7 @@
                     
                     // Eğer 403 hatası alırsanız (RPC hatası) kullanıcıyı bilgilendir
                     if (msg.includes("403") || msg.includes("429")) {
-                        msg = "Network busy (RPC Error). Please try again later.";
+                        msg = "Network busy (Public RPC Limit). Please wait 10s and try again.";
                     }
 
                     statusMsg.innerText = `${getTranslation('statusPaymentError')} ${msg.substring(0,60)}`;
