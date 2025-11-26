@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solana Neon Spin - Ultimate</title>
+    <title>Solana Neon Spin - Ultra Turbo</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -23,20 +23,20 @@
           theme: {
             extend: {
               colors: {
-                neonPurple: '#d946ef', // Fuchsia-500
-                neonBlue: '#06b6d4',   // Cyan-500
-                neonGreen: '#10b981',  // Emerald-500
-                neonGold: '#f59e0b',   // Amber-500
-                darkBg: '#020617',     // Slate-950
-                surface: '#0f172a',    // Slate-900
+                neonPurple: '#d946ef', 
+                neonBlue: '#06b6d4',   
+                neonGreen: '#10b981',  
+                neonGold: '#f59e0b',   
+                darkBg: '#020617',     
+                surface: '#0f172a',    
               },
               boxShadow: {
-                'neon-glow': '0 0 15px rgba(217, 70, 239, 0.6), 0 0 30px rgba(6, 182, 212, 0.4)',
+                'neon-glow': '0 0 20px rgba(217, 70, 239, 0.7), 0 0 40px rgba(6, 182, 212, 0.5)',
                 'wheel-depth': 'inset 0 0 20px rgba(0,0,0,0.8), 0 10px 40px rgba(0,0,0,0.6)',
               },
               animation: {
                 'float-slow': 'float 8s ease-in-out infinite',
-                'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
               },
               keyframes: {
@@ -68,7 +68,6 @@
             margin: 0;
         }
 
-        /* Particle & Grid Background */
         .bg-grid {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -93,12 +92,11 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
         }
 
-        /* 3D Wheel Effect */
         .wheel-border {
             box-shadow: 
-                0 0 0 8px #1e293b, /* Rim */
-                0 0 0 12px #334155, /* Outer Edge */
-                0 20px 60px rgba(0,0,0,0.9); /* Drop Shadow */
+                0 0 0 8px #1e293b, 
+                0 0 0 12px #334155, 
+                0 20px 60px rgba(0,0,0,0.9); 
         }
 
         .pointer-shadow {
@@ -114,12 +112,14 @@
     <script type="text/babel">
         const { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl, LAMPORTS_PER_SOL, ComputeBudgetProgram } = solanaWeb3;
 
-        // --- CONFIGURATION ---
-        // Priority Fees: Critical for landing transactions on congested Mainnet
-        const PRIORITY_FEE_MICRO_LAMPORTS = 50000; // Adjustable priority fee
-        const COMPUTE_UNIT_LIMIT = 200000;
+        // --- ULTRA TURBO CONFIGURATION ---
+        
+        // Massive Priority Fee Increase (0.002 SOL extra)
+        // This essentially bribes validators to process this transaction first
+        const PRIORITY_FEE = 2000000; 
+        const COMPUTE_UNITS = 200000;
 
-        // Fallback Endpoints
+        // Robust Fallback Endpoints
         const RPC_ENDPOINTS = [
             'https://api.mainnet-beta.solana.com',
             'https://rpc.ankr.com/solana',
@@ -185,12 +185,13 @@
                 } catch (err) {
                     attempt++;
                     console.warn(`Attempt ${attempt} failed.`, err);
+                    
                     if (err.message && (err.message.includes('429') || err.message.includes('network') || err.message.includes('fetch'))) {
                         connManager.switchEndpoint();
                     }
+
                     if (attempt >= maxRetries) throw err;
-                    const delay = baseDelay * Math.pow(1.5, attempt);
-                    await sleep(delay);
+                    await sleep(baseDelay + (Math.random() * 500));
                 }
             }
         }
@@ -301,30 +302,30 @@
                     return;
                 }
 
-                setStatus({ type: 'process', msg: 'Building Priority Tx...' });
+                setStatus({ type: 'process', msg: '🚀 Sending ULTRA PRIORITY TX...' });
 
                 try {
                     const sender = new PublicKey(walletAddress);
                     const receiver = new PublicKey(HOUSE_ADDRESS); 
 
-                    // 1. Get Blockhash
+                    // 1. Get Blockhash (Smart Retry)
                     const blockhashObj = await withSmartRetry(async (conn) => {
                         return await conn.getLatestBlockhash('finalized');
                     });
 
+                    // 2. Build Transaction with PRIORITY FEES
                     const transaction = new Transaction({
                         recentBlockhash: blockhashObj.blockhash,
                         feePayer: sender
                     });
 
-                    // 2. ADD PRIORITY FEES (Compute Budget)
-                    // This is key for reliability on congested networks
+                    // PRIORITY INSTRUCTIONS (Bahşiş)
                     const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
-                        microLamports: PRIORITY_FEE_MICRO_LAMPORTS
+                        microLamports: PRIORITY_FEE 
                     });
                     
                     const setComputeUnitLimit = ComputeBudgetProgram.setComputeUnitLimit({
-                        units: COMPUTE_UNIT_LIMIT
+                        units: COMPUTE_UNITS
                     });
 
                     const transferInstruction = SystemProgram.transfer({
@@ -333,30 +334,32 @@
                         lamports: Math.round(SPIN_COST * LAMPORTS_PER_SOL),
                     });
 
+                    // Add instructions: Limit -> Fee -> Action
                     transaction.add(setComputeUnitLimit, addPriorityFee, transferInstruction);
 
-                    setStatus({ type: 'process', msg: 'Approve in Wallet...' });
+                    setStatus({ type: 'process', msg: 'Approve Priority Fee...' });
                     const signedTransaction = await provider.signTransaction(transaction);
                     
-                    setStatus({ type: 'process', msg: 'Sending (Priority Mode)...' });
+                    setStatus({ type: 'process', msg: 'Broadcasting to Validators...' });
                     
-                    // 3. Send Raw Transaction
+                    // 3. Send Raw Transaction with Retries
                     await withSmartRetry(async (conn) => {
                         const signature = await conn.sendRawTransaction(signedTransaction.serialize(), {
-                            skipPreflight: true,
+                            skipPreflight: true, // Important for reliability
                             preflightCommitment: 'confirmed',
                         });
                         console.log("Sent Tx:", signature);
                         
+                        // Wait for confirmation
                         const confirmation = await conn.confirmTransaction({
                             signature,
                             blockhash: blockhashObj.blockhash,
                             lastValidBlockHeight: blockhashObj.lastValidBlockHeight
                         }, 'confirmed');
                         
-                        if(confirmation.value.err) throw new Error("Tx failed");
+                        if(confirmation.value.err) throw new Error("Tx failed on chain");
                         return signature;
-                    }, 3, 2000);
+                    }, 4, 1500);
 
                     setStatus({ type: 'process', msg: 'Spinning! 🎡' });
                     startWeightedSpin();
@@ -368,6 +371,7 @@
                     if (error.message?.includes("User rejected")) {
                         setStatus({ type: 'error', msg: 'Transaction Cancelled' });
                     } else {
+                        // Generic error handler that encourages retry
                         setStatus({ type: 'error', msg: 'Network Busy. Trying again usually works.' });
                     }
                 }
@@ -610,7 +614,7 @@
                     </div>
 
                     <div className="fixed bottom-4 text-[9px] text-gray-600 font-bold tracking-[0.3em] opacity-40">
-                        SOLANA MAINNET
+                        SOLANA MAINNET • ULTRA PRIORITY
                     </div>
 
                 </div>
