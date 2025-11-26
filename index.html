@@ -37,11 +37,18 @@
               animation: {
                 'float-slow': 'float 8s ease-in-out infinite',
                 'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
               },
               keyframes: {
                 float: {
                   '0%, 100%': { transform: 'translateY(0)' },
                   '50%': { transform: 'translateY(-10px)' },
+                },
+                shake: {
+                  '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                  '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                  '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                  '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
                 }
               }
             }
@@ -105,14 +112,19 @@
     <div class="bg-grid"></div>
 
     <script type="text/babel">
-        const { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
+        const { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl, LAMPORTS_PER_SOL, ComputeBudgetProgram } = solanaWeb3;
 
         // --- CONFIGURATION ---
-        // Robust Fallback Endpoints
+        // Priority Fees: Critical for landing transactions on congested Mainnet
+        const PRIORITY_FEE_MICRO_LAMPORTS = 50000; // Adjustable priority fee
+        const COMPUTE_UNIT_LIMIT = 200000;
+
+        // Fallback Endpoints
         const RPC_ENDPOINTS = [
             'https://api.mainnet-beta.solana.com',
             'https://rpc.ankr.com/solana',
-            'https://solana-api.projectserum.com'
+            'https://solana-api.projectserum.com',
+            'https://solana-mainnet.rpc.extrnode.com',
         ];
 
         const CONNECTION_CONFIG = { 
@@ -142,7 +154,6 @@
         const SEGMENT_ANGLE = 360 / SEGMENTS.length;
 
         // --- CONNECTION MANAGER ---
-        // Tries endpoints sequentially until one works
         class ConnectionManager {
             constructor() {
                 this.currentIndex = 0;
@@ -164,7 +175,6 @@
 
         const connManager = new ConnectionManager();
 
-        // Smart Retry Logic with Endpoint Switching
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         
         async function withSmartRetry(fn, maxRetries = 5, baseDelay = 1000) {
@@ -175,14 +185,10 @@
                 } catch (err) {
                     attempt++;
                     console.warn(`Attempt ${attempt} failed.`, err);
-                    
-                    // If error suggests network issue, switch endpoint
                     if (err.message && (err.message.includes('429') || err.message.includes('network') || err.message.includes('fetch'))) {
                         connManager.switchEndpoint();
                     }
-
                     if (attempt >= maxRetries) throw err;
-                    
                     const delay = baseDelay * Math.pow(1.5, attempt);
                     await sleep(delay);
                 }
@@ -249,6 +255,7 @@
             const [status, setStatus] = React.useState({ type: 'info', msg: 'Connect Wallet to Play' });
             const [history, setHistory] = React.useState([]);
             const [soundEnabled, setSoundEnabled] = React.useState(true);
+            const [shake, setShake] = React.useState(false);
 
             const connectWallet = async () => {
                 const provider = getProvider();
@@ -294,13 +301,13 @@
                     return;
                 }
 
-                setStatus({ type: 'process', msg: 'Preparing Transaction...' });
+                setStatus({ type: 'process', msg: 'Building Priority Tx...' });
 
                 try {
                     const sender = new PublicKey(walletAddress);
                     const receiver = new PublicKey(HOUSE_ADDRESS); 
 
-                    // 1. Get Blockhash (Smart Retry)
+                    // 1. Get Blockhash
                     const blockhashObj = await withSmartRetry(async (conn) => {
                         return await conn.getLatestBlockhash('finalized');
                     });
@@ -308,20 +315,32 @@
                     const transaction = new Transaction({
                         recentBlockhash: blockhashObj.blockhash,
                         feePayer: sender
-                    }).add(
-                        SystemProgram.transfer({
-                            fromPubkey: sender,
-                            toPubkey: receiver, 
-                            lamports: Math.round(SPIN_COST * LAMPORTS_PER_SOL),
-                        })
-                    );
+                    });
+
+                    // 2. ADD PRIORITY FEES (Compute Budget)
+                    // This is key for reliability on congested networks
+                    const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+                        microLamports: PRIORITY_FEE_MICRO_LAMPORTS
+                    });
+                    
+                    const setComputeUnitLimit = ComputeBudgetProgram.setComputeUnitLimit({
+                        units: COMPUTE_UNIT_LIMIT
+                    });
+
+                    const transferInstruction = SystemProgram.transfer({
+                        fromPubkey: sender,
+                        toPubkey: receiver, 
+                        lamports: Math.round(SPIN_COST * LAMPORTS_PER_SOL),
+                    });
+
+                    transaction.add(setComputeUnitLimit, addPriorityFee, transferInstruction);
 
                     setStatus({ type: 'process', msg: 'Approve in Wallet...' });
                     const signedTransaction = await provider.signTransaction(transaction);
                     
-                    setStatus({ type: 'process', msg: 'Sending to Network...' });
+                    setStatus({ type: 'process', msg: 'Sending (Priority Mode)...' });
                     
-                    // 2. Send Raw Transaction (Smart Retry)
+                    // 3. Send Raw Transaction
                     await withSmartRetry(async (conn) => {
                         const signature = await conn.sendRawTransaction(signedTransaction.serialize(), {
                             skipPreflight: true,
@@ -329,7 +348,6 @@
                         });
                         console.log("Sent Tx:", signature);
                         
-                        // Wait a bit for propagation
                         const confirmation = await conn.confirmTransaction({
                             signature,
                             blockhash: blockhashObj.blockhash,
@@ -343,7 +361,6 @@
                     setStatus({ type: 'process', msg: 'Spinning! 🎡' });
                     startWeightedSpin();
                     
-                    // Refresh balance later
                     setTimeout(() => fetchBalance(sender), 5000);
 
                 } catch (error) {
@@ -351,8 +368,7 @@
                     if (error.message?.includes("User rejected")) {
                         setStatus({ type: 'error', msg: 'Transaction Cancelled' });
                     } else {
-                        setStatus({ type: 'error', msg: 'Network Busy. Retrying...' });
-                        // Auto-retry logic could be added here, but for now just warn user
+                        setStatus({ type: 'error', msg: 'Network Busy. Trying again usually works.' });
                     }
                 }
             };
@@ -416,6 +432,7 @@
 
                 if (result.type === 'win') {
                     setStatus({ type: 'win', msg: `WINNER! ${result.label}` });
+                    setShake(true);
                     if(soundEnabled) AudioEngine.win();
                     confetti({
                         particleCount: 200,
@@ -424,13 +441,14 @@
                         colors: ['#d946ef', '#00ff9d', '#f59e0b'],
                         zIndex: 50
                     });
+                    setTimeout(() => setShake(false), 500);
                 } else {
                     setStatus({ type: 'lose', msg: result.label });
                 }
             };
 
             return (
-                <div className="flex flex-col items-center justify-center min-h-screen relative overflow-hidden pb-10">
+                <div className={`flex flex-col items-center justify-center min-h-screen relative overflow-hidden pb-10 ${shake ? 'animate-shake' : ''}`}>
                     
                     {/* Header */}
                     <div className="absolute top-0 left-0 w-full p-4 z-30 flex justify-center">
