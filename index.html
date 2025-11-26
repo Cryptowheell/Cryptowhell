@@ -135,32 +135,19 @@
             const [isSpinning, setIsSpinning] = React.useState(false);
             const [rotation, setRotation] = React.useState(0);
             const [status, setStatus] = React.useState({ type: 'info', msg: 'Connect wallet to start playing.' });
+            const [isRefreshing, setIsRefreshing] = React.useState(false);
             
             // Using 'confirmed' commitment for better reliability
             const connection = new Connection(clusterApiUrl(SOLANA_NETWORK), 'confirmed');
 
-            // Auto-connect on load if previously trusted
-            React.useEffect(() => {
-                const onLoad = async () => {
-                    const provider = getProvider();
-                    if (provider) {
-                        try {
-                            // Only connect if user previously approved (onlyIfTrusted: true)
-                            const resp = await provider.connect({ onlyIfTrusted: true });
-                            handleConnection(provider, resp.publicKey);
-                        } catch (err) {
-                            // User not connected yet, normal behavior
-                        }
-                    }
-                };
-                window.addEventListener('load', onLoad);
-                return () => window.removeEventListener('load', onLoad);
-            }, []);
+            // REMOVED: Auto-connect logic to ensure user explicitly approves.
+            /* React.useEffect(() => { ... }, []); */
 
             const connectWallet = async () => {
                 const provider = getProvider();
                 if (provider) {
                     try {
+                        // connect() without params forces the popup if not connected
                         const resp = await provider.connect();
                         handleConnection(provider, resp.publicKey);
                     } catch (err) {
@@ -176,33 +163,59 @@
             const handleConnection = async (provider, publicKey) => {
                 const pubKeyStr = publicKey.toString();
                 setWalletAddress(pubKeyStr);
-                setStatus({ type: 'success', msg: 'Wallet connected! Good luck.' });
+                setStatus({ type: 'success', msg: 'Wallet connected! Fetching balance...' });
                 
-                // Fetch balance
+                // Fetch balance with a slight delay to ensure network readiness
+                setTimeout(() => fetchBalance(publicKey), 500);
+            };
+
+            const fetchBalance = async (publicKey) => {
+                setIsRefreshing(true);
                 try {
+                    // Try to get balance
                     const bal = await connection.getBalance(publicKey);
-                    setBalance(bal / LAMPORTS_PER_SOL);
+                    const solBalance = bal / LAMPORTS_PER_SOL;
+                    setBalance(solBalance);
+                    
+                    if(solBalance === 0) {
+                         setStatus({ type: 'info', msg: 'Balance is 0. Ensure Phantom is on Mainnet.' });
+                    } else {
+                         setStatus({ type: 'success', msg: 'Ready to Spin!' });
+                    }
                 } catch (err) {
                     console.error("Balance fetch error:", err);
-                    setStatus({ type: 'error', msg: 'Could not fetch balance. Network busy?' });
+                    setStatus({ type: 'error', msg: 'Network error fetching balance. Try refresh.' });
+                } finally {
+                    setIsRefreshing(false);
                 }
             };
 
-            const refreshBalance = async () => {
-                if (!walletAddress) return;
-                try {
-                    const bal = await connection.getBalance(new PublicKey(walletAddress));
-                    setBalance(bal / LAMPORTS_PER_SOL);
-                } catch(err) { console.error(err); }
+            const refreshBalance = () => {
+                if (walletAddress) {
+                    fetchBalance(new PublicKey(walletAddress));
+                }
             }
 
             const handleSpin = async () => {
                 if (!walletAddress || isSpinning) return;
                 
-                // 1. Check Balance First
+                // 1. Check Balance First (Local Check)
                 if (balance < SPIN_COST) {
-                    setStatus({ type: 'error', msg: `Insufficient funds! You need ${SPIN_COST} SOL.` });
-                    return;
+                    // Try refreshing one last time before failing
+                    setStatus({ type: 'process', msg: 'Re-checking balance...' });
+                    try {
+                         const currentBal = await connection.getBalance(new PublicKey(walletAddress));
+                         const currentSol = currentBal / LAMPORTS_PER_SOL;
+                         setBalance(currentSol);
+                         
+                         if (currentSol < SPIN_COST) {
+                             setStatus({ type: 'error', msg: `Insufficient funds! You have ${currentSol.toFixed(4)} SOL.` });
+                             return;
+                         }
+                    } catch(e) {
+                         setStatus({ type: 'error', msg: 'Network error. Please try again.' });
+                         return;
+                    }
                 }
 
                 const provider = getProvider();
@@ -248,6 +261,7 @@
                     }
 
                     setStatus({ type: 'success', msg: 'Spinning... 🎡' });
+                    // Refresh balance in background
                     refreshBalance();
                     
                     // Start the Weighted Spin
@@ -325,9 +339,23 @@
                                 <WalletIcon /> Connect
                             </button>
                         ) : (
-                            <div className="text-right bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
-                                <div className="text-xs text-slate-400 font-medium uppercase">Balance</div>
-                                <div className="font-mono text-lg text-solanaGreen font-bold">{balance.toFixed(4)} SOL</div>
+                            <div className="flex items-center gap-2">
+                                <div className="text-right bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+                                    <div className="text-xs text-slate-400 font-medium uppercase">Balance</div>
+                                    <div className="font-mono text-lg text-solanaGreen font-bold">
+                                        {isRefreshing ? "..." : balance.toFixed(4)} SOL
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={refreshBalance} 
+                                    disabled={isRefreshing}
+                                    className="p-2 bg-slate-800 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                                    title="Refresh Balance"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </button>
                             </div>
                         )}
                     </div>
