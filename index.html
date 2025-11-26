@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Solana Neon Spin</title>
+    <title>Solana Neon Spin - Ultimate</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -23,28 +23,25 @@
           theme: {
             extend: {
               colors: {
-                neonPurple: '#b026ff',
-                neonGreen: '#00ff9d',
-                neonBlue: '#00f3ff',
-                darkBg: '#050510',
-                panel: 'rgba(20, 20, 40, 0.6)',
+                neonPurple: '#d946ef', // Fuchsia-500
+                neonBlue: '#06b6d4',   // Cyan-500
+                neonGreen: '#10b981',  // Emerald-500
+                neonGold: '#f59e0b',   // Amber-500
+                darkBg: '#020617',     // Slate-950
+                surface: '#0f172a',    // Slate-900
               },
               boxShadow: {
-                'glow-purple': '0 0 20px rgba(176, 38, 255, 0.5), inset 0 0 10px rgba(176, 38, 255, 0.2)',
-                'glow-green': '0 0 20px rgba(0, 255, 157, 0.5), inset 0 0 10px rgba(0, 255, 157, 0.2)',
+                'neon-glow': '0 0 10px rgba(217, 70, 239, 0.5), 0 0 20px rgba(6, 182, 212, 0.3)',
+                'wheel-depth': 'inset 0 0 20px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5)',
               },
               animation: {
-                'float': 'float 6s ease-in-out infinite',
-                'pulse-neon': 'pulseNeon 2s ease-in-out infinite',
+                'float-slow': 'float 8s ease-in-out infinite',
+                'pulse-subtle': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               },
               keyframes: {
                 float: {
                   '0%, 100%': { transform: 'translateY(0)' },
-                  '50%': { transform: 'translateY(-10px)' },
-                },
-                pulseNeon: {
-                  '0%, 100%': { filter: 'drop-shadow(0 0 5px rgba(0, 243, 255, 0.5))' },
-                  '50%': { filter: 'drop-shadow(0 0 15px rgba(0, 243, 255, 0.8))' },
+                  '50%': { transform: 'translateY(-15px)' },
                 }
               }
             }
@@ -57,144 +54,151 @@
 
     <style>
         body {
-            background-color: #050510;
+            background-color: #020617;
             color: white;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
             margin: 0;
         }
 
-        /* Particle Background */
-        .particles {
+        /* Particle & Grid Background */
+        .bg-grid {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-image: 
-                radial-gradient(circle at 50% 50%, rgba(176, 38, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(white 1px, transparent 1px);
-            background-size: 100% 100%, 50px 50px;
-            opacity: 0.5;
-            z-index: -1;
-            animation: moveBackground 100s linear infinite;
-        }
-
-        @keyframes moveBackground {
-            from { background-position: 0 0, 0 0; }
-            to { background-position: 0 0, 1000px 1000px; }
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -2;
+            mask-image: radial-gradient(circle at 50% 50%, black 0%, transparent 80%);
         }
 
         .wheel-container {
-            transition: transform 6s cubic-bezier(0.1, 0.8, 0.1, 1);
+            transition: transform 6s cubic-bezier(0.12, 0.8, 0.15, 1); /* Custom Bezier for realistic friction */
             will-change: transform;
         }
 
-        .glass-panel {
-            background: rgba(20, 25, 40, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
         }
 
-        /* Segment Text Orientation */
-        .segment-text-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-        }
-        
-        .segment-label {
-            position: absolute;
-            top: 20px; left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            transform-origin: center bottom;
+        /* 3D Wheel Effect */
+        .wheel-border {
+            box-shadow: 
+                0 0 0 8px #1e293b, /* Rim */
+                0 0 0 10px #334155, /* Outer Edge */
+                0 20px 50px rgba(0,0,0,0.8); /* Drop Shadow */
         }
 
+        .pointer-shadow {
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.6));
+        }
     </style>
 </head>
 <body>
 
     <div id="root"></div>
-
-    <div class="particles"></div>
+    <div class="bg-grid"></div>
 
     <script type="text/babel">
         const { Connection, PublicKey, Transaction, SystemProgram, clusterApiUrl, LAMPORTS_PER_SOL } = solanaWeb3;
 
         // --- CONFIGURATION ---
-        // Using 'confirmed' commitment helps with "Network Busy" errors by accepting slightly less finality
-        const CONNECTION_CONFIG = { commitment: 'confirmed', confirmTransactionInitialTimeout: 60000 };
+        // Optimized for Mainnet Congestion
+        const CONNECTION_CONFIG = { 
+            commitment: 'confirmed', 
+            confirmTransactionInitialTimeout: 120000, // Increased timeout
+            disableRetryOnRateLimit: false
+        };
         const SOLANA_NETWORK = 'mainnet-beta'; 
         const SPIN_COST = 0.01; 
         const HOUSE_ADDRESS = "CTD6awXNUksKhCFcZX8Ubst2ANxioUUNX1iRbhTYKxby";
 
+        // Segments - Balanced Visuals
         const SEGMENTS = [
-            { label: "2 SOL",   value: 2,    color: "#FFD700", textColor: "#000", type: "win", weight: 0 },
-            { label: "LOST",    value: 0,    color: "#EF4444", textColor: "#FFF", type: "lose", weight: 15 },
-            { label: "0.1 SOL", value: 0.1,  color: "#8B5CF6", textColor: "#FFF", type: "win", weight: 10 },
-            { label: "EMPTY",   value: 0,    color: "#64748B", textColor: "#FFF", type: "lose", weight: 10 },
-            { label: "1 SOL",   value: 1,    color: "#F59E0B", textColor: "#000", type: "win", weight: 0 },
-            { label: "AGAIN",   value: 0,    color: "#DC2626", textColor: "#FFF", type: "lose", weight: 15 },
-            { label: "0.05 SOL", value: 0.05, color: "#10B981", textColor: "#FFF", type: "win", weight: 15 },
+            { label: "2 SOL",   value: 2,    color: "#fbbf24", textColor: "#000", type: "win", weight: 0 },
+            { label: "LOST",    value: 0,    color: "#ef4444", textColor: "#FFF", type: "lose", weight: 15 },
+            { label: "0.1 SOL", value: 0.1,  color: "#8b5cf6", textColor: "#FFF", type: "win", weight: 10 },
+            { label: "EMPTY",   value: 0,    color: "#64748b", textColor: "#FFF", type: "lose", weight: 10 },
+            { label: "1 SOL",   value: 1,    color: "#f59e0b", textColor: "#000", type: "win", weight: 0 },
+            { label: "AGAIN",   value: 0,    color: "#dc2626", textColor: "#FFF", type: "lose", weight: 15 },
+            { label: "0.05 SOL", value: 0.05, color: "#10b981", textColor: "#FFF", type: "win", weight: 15 },
             { label: "BAD LUCK", value: 0,   color: "#475569", textColor: "#FFF", type: "lose", weight: 5 },
-            { label: "0.5 SOL", value: 0.5,  color: "#3B82F6", textColor: "#FFF", type: "win", weight: 5 },
-            { label: "NO LUCK", value: 0,    color: "#7F1D1D", textColor: "#FFF", type: "lose", weight: 10 },
-            { label: "5 SOL",   value: 5,    color: "#EC4899", textColor: "#FFF", type: "win", weight: 0 },
-            { label: "BANKRUPT", value: 0,   color: "#1E293B", textColor: "#FFF", type: "lose", weight: 15 },
+            { label: "0.5 SOL", value: 0.5,  color: "#0ea5e9", textColor: "#FFF", type: "win", weight: 5 },
+            { label: "NO LUCK", value: 0,    color: "#991b1b", textColor: "#FFF", type: "lose", weight: 10 },
+            { label: "5 SOL",   value: 5,    color: "#ec4899", textColor: "#FFF", type: "win", weight: 0 },
+            { label: "BANKRUPT", value: 0,   color: "#1e293b", textColor: "#FFF", type: "lose", weight: 15 },
         ];
 
         const SEGMENT_ANGLE = 360 / SEGMENTS.length;
 
-        // Retry Utility
+        // Robust Retry Logic
         const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
         
-        async function withRetry(fn, retries = 3, delay = 1000) {
+        async function withRetry(fn, retries = 3, delay = 2000) {
             try {
                 return await fn();
             } catch (err) {
-                if (retries <= 1) throw err;
-                console.log(`Retrying... attempts left: ${retries - 1}`);
+                if (retries <= 0) throw err;
+                console.warn(`Retrying operation... Attempts left: ${retries}`);
                 await sleep(delay);
                 return withRetry(fn, retries - 1, delay * 1.5);
             }
         }
 
-        // Sound Engine
+        // Advanced Sound Engine
         const AudioEngine = {
             ctx: null,
             init: function() {
                 if (!this.ctx) {
                     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
                 }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
             },
             click: function() {
                 if (!this.ctx) return;
+                const t = this.ctx.currentTime;
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(200, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(50, this.ctx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                
+                // Wood/Plastic Click Sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, t);
+                osc.frequency.exponentialRampToValueAtTime(50, t + 0.03);
+                
+                gain.gain.setValueAtTime(0.3, t);
+                gain.gain.exponentialRampToValueAtTime(0.01, t + 0.03);
+                
                 osc.connect(gain);
                 gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.05);
+                osc.start(t);
+                osc.stop(t + 0.04);
             },
             win: function() {
                 if (!this.ctx) return;
-                const now = this.ctx.currentTime;
-                [261.63, 329.63, 392.00, 523.25].forEach((freq, i) => {
+                const t = this.ctx.currentTime;
+                
+                // Major Chord Arpeggio
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
-                    osc.type = 'triangle';
+                    osc.type = 'sine';
                     osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0.1, now + i * 0.1);
-                    gain.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.5);
+                    
+                    gain.gain.setValueAtTime(0, t + i*0.1);
+                    gain.gain.linearRampToValueAtTime(0.2, t + i*0.1 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, t + i*0.1 + 0.6);
+                    
                     osc.connect(gain);
                     gain.connect(this.ctx.destination);
-                    osc.start(now + i * 0.1);
-                    osc.stop(now + i * 0.1 + 0.5);
+                    osc.start(t + i*0.1);
+                    osc.stop(t + i*0.1 + 0.7);
                 });
             }
         };
@@ -212,11 +216,10 @@
             const [balance, setBalance] = React.useState(null); 
             const [isSpinning, setIsSpinning] = React.useState(false);
             const [rotation, setRotation] = React.useState(0);
-            const [status, setStatus] = React.useState({ type: 'info', msg: 'Connect wallet to play' });
+            const [status, setStatus] = React.useState({ type: 'info', msg: 'Connect Wallet to Start' });
             const [history, setHistory] = React.useState([]);
             const [soundEnabled, setSoundEnabled] = React.useState(true);
 
-            // Connection with retry-friendly config
             const connection = new Connection(clusterApiUrl(SOLANA_NETWORK), CONNECTION_CONFIG);
 
             const connectWallet = async () => {
@@ -226,11 +229,11 @@
                         const resp = await provider.connect();
                         const pubKey = resp.publicKey.toString();
                         setWalletAddress(pubKey);
-                        setStatus({ type: 'success', msg: 'Connected! Ready to spin.' });
+                        setStatus({ type: 'success', msg: 'Wallet Connected! Ready.' });
                         AudioEngine.init();
                         fetchBalance(resp.publicKey);
                     } catch (err) {
-                        setStatus({ type: 'error', msg: 'Connection rejected' });
+                        setStatus({ type: 'error', msg: 'User rejected connection.' });
                     }
                 } else {
                     window.open("https://phantom.app/", "_blank");
@@ -239,7 +242,8 @@
 
             const fetchBalance = async (publicKey) => {
                 try {
-                    const bal = await connection.getBalance(publicKey);
+                    // Force a fresh fetch
+                    const bal = await withRetry(() => connection.getBalance(publicKey, 'confirmed'));
                     setBalance(bal / LAMPORTS_PER_SOL);
                 } catch (err) {
                     console.error("Balance fetch error:", err);
@@ -248,37 +252,34 @@
 
             const handleSpin = async () => {
                 if (!walletAddress || isSpinning) return;
-                
-                // Initialize audio context on user interaction if needed
                 AudioEngine.init();
 
                 const provider = getProvider();
                 if (!provider) return;
 
-                // Local balance check (optional, good UX)
                 if (balance !== null && balance < SPIN_COST) {
-                    setStatus({ type: 'error', msg: `Insufficient funds (${SPIN_COST} SOL)` });
+                    setStatus({ type: 'error', msg: `Need ${SPIN_COST} SOL to spin.` });
                     return;
                 }
 
-                setStatus({ type: 'process', msg: 'Preparing transaction...' });
+                setStatus({ type: 'process', msg: 'Initiating Transaction...' });
 
                 try {
                     const sender = new PublicKey(walletAddress);
                     const receiver = new PublicKey(HOUSE_ADDRESS); 
 
-                    // 1. Get Blockhash (with Retry)
-                    let blockhashData;
+                    // 1. Fetch Blockhash with Retry
+                    let blockhashObj;
                     try {
-                        blockhashData = await withRetry(() => connection.getLatestBlockhash('finalized'));
+                        blockhashObj = await withRetry(() => connection.getLatestBlockhash('finalized'));
                     } catch (e) {
-                        console.error("RPC Error:", e);
-                        setStatus({ type: 'error', msg: 'Network Busy. Please try again.' });
-                        return;
+                        setStatus({ type: 'error', msg: 'Network busy. Trying alternative...' });
+                        // Fallback to confirmed if finalized fails
+                        blockhashObj = await connection.getLatestBlockhash('confirmed');
                     }
 
                     const transaction = new Transaction({
-                        recentBlockhash: blockhashData.blockhash,
+                        recentBlockhash: blockhashObj.blockhash,
                         feePayer: sender
                     }).add(
                         SystemProgram.transfer({
@@ -288,33 +289,40 @@
                         })
                     );
 
-                    // 2. User Sign (No retry here, user action)
-                    setStatus({ type: 'process', msg: 'Please approve in wallet...' });
+                    setStatus({ type: 'process', msg: 'Please Approve in Phantom...' });
                     const signedTransaction = await provider.signTransaction(transaction);
                     
-                    // 3. Send Raw Transaction (with Retry)
-                    setStatus({ type: 'process', msg: 'Broadcasting...' });
+                    setStatus({ type: 'process', msg: 'Sending to Blockchain...' });
+                    
+                    // 2. Send & Confirm with Retry
+                    // We send raw transaction. If it fails due to network, we retry sending.
                     const signature = await withRetry(async () => {
                         return await connection.sendRawTransaction(signedTransaction.serialize(), {
-                            skipPreflight: false,
+                            skipPreflight: true, // Skip preflight to avoid false positives on busy network
                             preflightCommitment: 'confirmed'
                         });
-                    });
+                    }, 3, 1500);
 
+                    console.log("Tx Signature:", signature);
                     setStatus({ type: 'process', msg: 'Spinning! 🎡' });
+                    
                     startWeightedSpin();
                     
-                    // Update balance in background
-                    setTimeout(() => fetchBalance(sender), 4000);
+                    // Check confirmation in background
+                    connection.confirmTransaction({
+                        signature,
+                        blockhash: blockhashObj.blockhash,
+                        lastValidBlockHeight: blockhashObj.lastValidBlockHeight
+                    }, 'confirmed').then(() => {
+                        fetchBalance(sender);
+                    }).catch(e => console.log("Confirmation weak but tx likely sent:", e));
 
                 } catch (error) {
-                    console.error("Tx Error:", error);
+                    console.error("Spin Error:", error);
                     if (error.message?.includes("User rejected")) {
                         setStatus({ type: 'error', msg: 'Transaction Cancelled' });
-                    } else if (error.message?.includes("0x1")) {
-                        setStatus({ type: 'error', msg: 'Insufficient Funds' });
                     } else {
-                        setStatus({ type: 'error', msg: 'Network Congestion. Try again.' });
+                        setStatus({ type: 'error', msg: 'Network Busy. Please try again.' });
                     }
                 }
             };
@@ -322,6 +330,7 @@
             const startWeightedSpin = () => {
                 setIsSpinning(true);
                 
+                // Weighted Random Selection
                 const totalWeight = SEGMENTS.reduce((sum, seg) => sum + seg.weight, 0);
                 let randomNum = Math.random() * totalWeight;
                 let selectedIndex = 0;
@@ -333,31 +342,52 @@
                     randomNum -= SEGMENTS[i].weight;
                 }
 
-                // Math for 12 segments
-                // To land on index i, we need angle: 360 - (i * 30 + 15)
-                const segmentCenter = selectedIndex * SEGMENT_ANGLE + (SEGMENT_ANGLE / 2); 
-                const stopAngle = 360 - segmentCenter; 
+                // Calculate target rotation
+                // Segment width is 30 degrees
+                // Center of segment i is at: i * 30 + 15
+                // To land there, we need to rotate 360 - (i * 30 + 15) degrees
+                const segmentCenter = selectedIndex * SEGMENT_ANGLE + (SEGMENT_ANGLE / 2);
+                const targetAngleBase = 360 - segmentCenter;
                 
-                // Add fuzziness (+/- 12 deg) to stay safely inside the 30 deg segment
-                const fuzziness = (Math.random() - 0.5) * 24; 
+                // Add Randomness (+/- 10 deg)
+                const randomness = (Math.random() - 0.5) * 20;
                 
-                const extraSpins = 360 * 6; // 6 full spins
-                const targetRotation = rotation + extraSpins + (stopAngle - (rotation % 360)) + fuzziness;
-                
-                // Ensure forward rotation only
-                const finalRotation = Math.max(targetRotation, rotation + 360 * 5); 
+                const spins = 360 * 8; // 8 full spins
+                const targetRotation = rotation + spins + (targetAngleBase - (rotation % 360)) + randomness;
+                // Ensure strictly increasing rotation
+                const finalRotation = Math.max(targetRotation, rotation + 360 * 5);
 
                 setRotation(finalRotation);
 
-                // Sound Loop
+                // Dynamic Sound Ticking
+                // We simulate ticks based on rotation speed curve
                 if (soundEnabled) {
-                     let count = 0;
-                     const totalTicks = 40;
-                     const interval = setInterval(() => {
-                        AudioEngine.click();
-                        count++;
-                        if(count >= totalTicks) clearInterval(interval);
-                     }, 6000 / totalTicks);
+                    const duration = 6000; // 6s
+                    const totalDistance = finalRotation - rotation;
+                    const startTime = Date.now();
+                    
+                    let lastTickAngle = rotation;
+                    const tickSpacing = SEGMENT_ANGLE; // Tick every segment pass
+
+                    const tickLoop = () => {
+                        const elapsed = Date.now() - startTime;
+                        if (elapsed >= duration) return;
+
+                        // Cubic Bezier Approximation for current position (0.12, 0.8, 0.15, 1)
+                        // Simplified easing for sound sync: easeOutCubic
+                        const t = Math.min(1, elapsed / duration);
+                        const ease = 1 - Math.pow(1 - t, 3); 
+                        
+                        const currentAngle = rotation + (totalDistance * ease);
+                        
+                        if (currentAngle - lastTickAngle >= tickSpacing) {
+                            AudioEngine.click();
+                            lastTickAngle = currentAngle;
+                        }
+                        
+                        requestAnimationFrame(tickLoop);
+                    };
+                    tickLoop();
                 }
 
                 setTimeout(() => {
@@ -368,16 +398,17 @@
 
             const calculateResult = (index) => {
                 const result = SEGMENTS[index];
-                setHistory(prev => [result, ...prev].slice(0, 4)); // Keep last 4
+                setHistory(prev => [result, ...prev].slice(0, 5));
 
                 if (result.type === 'win') {
-                    setStatus({ type: 'win', msg: `WIN: ${result.label}` });
+                    setStatus({ type: 'win', msg: `YOU WON ${result.label}!` });
                     if(soundEnabled) AudioEngine.win();
                     confetti({
-                        particleCount: 150,
-                        spread: 70,
+                        particleCount: 200,
+                        spread: 100,
                         origin: { y: 0.6 },
-                        colors: ['#00ff9d', '#b026ff', '#ffffff']
+                        colors: ['#d946ef', '#00ff9d', '#f59e0b'],
+                        zIndex: 50
                     });
                 } else {
                     setStatus({ type: 'lose', msg: result.label });
@@ -385,57 +416,67 @@
             };
 
             return (
-                <div className="flex flex-col items-center justify-center min-h-screen relative overflow-hidden">
+                <div className="flex flex-col items-center justify-center min-h-screen relative overflow-hidden pb-10">
                     
-                    {/* UI Header */}
-                    <div className="absolute top-6 w-full max-w-lg px-4 z-20">
-                        <div className="glass-panel rounded-2xl p-4 flex justify-between items-center shadow-glow-purple">
+                    {/* Header Bar */}
+                    <div className="absolute top-0 left-0 w-full p-4 z-30 flex justify-center">
+                        <div className="glass-card rounded-full px-6 py-3 flex items-center justify-between w-full max-w-lg shadow-neon-glow">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-neonPurple to-neonBlue rounded-xl flex items-center justify-center shadow-lg animate-float">
-                                    <span className="text-xl font-bold text-white">◎</span>
+                                <div className="w-8 h-8 bg-gradient-to-br from-neonPurple to-neonBlue rounded-full flex items-center justify-center shadow-lg animate-float-slow">
+                                    <span className="text-lg font-bold text-white">◎</span>
                                 </div>
                                 <div>
-                                    <h1 className="text-xl font-black text-white leading-none tracking-tight">SOLANA</h1>
-                                    <span className="text-xs font-bold text-neonGreen tracking-[0.3em]">SPIN</span>
+                                    <div className="text-xs text-gray-400 font-bold tracking-widest">SOLANA</div>
+                                    <div className="text-sm font-black text-white leading-none">NEON SPIN</div>
                                 </div>
                             </div>
                             
-                            {!walletAddress ? (
-                                <button onClick={connectWallet} className="bg-gradient-to-r from-neonPurple to-blue-600 hover:to-neonPurple text-white px-5 py-2 rounded-xl font-bold transition-all shadow-lg hover:shadow-neonPurple/50 text-sm">
-                                    Connect
-                                </button>
-                            ) : (
-                                <div className="flex items-center gap-3">
-                                    <div className="text-right px-3 py-1 bg-black/40 rounded-lg border border-white/10">
-                                        <div className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Balance</div>
-                                        <div className="font-mono text-neonGreen font-bold text-sm leading-none">
-                                            {balance === null ? "..." : balance.toFixed(3)}
+                            <div className="flex items-center gap-3">
+                                {walletAddress && (
+                                    <div className="text-right hidden sm:block">
+                                        <div className="text-[10px] text-gray-400 font-bold uppercase">Balance</div>
+                                        <div className="text-xs font-mono text-neonGreen">
+                                            {balance === null ? "..." : balance.toFixed(3)} SOL
                                         </div>
                                     </div>
-                                    <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-9 h-9 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded-lg text-gray-300 hover:text-white transition border border-white/10">
-                                        {soundEnabled ? "🔊" : "🔇"}
+                                )}
+                                
+                                <button onClick={() => setSoundEnabled(!soundEnabled)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition border border-white/10">
+                                    {soundEnabled ? '🔊' : '🔇'}
+                                </button>
+
+                                {!walletAddress ? (
+                                    <button onClick={connectWallet} className="bg-gradient-to-r from-neonPurple to-blue-600 text-white px-4 py-1.5 rounded-full font-bold text-xs transition hover:scale-105 shadow-lg">
+                                        Connect
                                     </button>
-                                </div>
-                            )}
+                                ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-neonGreen to-emerald-600 border-2 border-white/20 shadow-lg"></div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Wheel Area */}
-                    <div className="relative z-10 scale-[0.85] sm:scale-100 mt-10">
+                    {/* Wheel Section */}
+                    <div className="relative z-10 mt-12 scale-90 sm:scale-100">
                         
-                        {/* Metallic Needle */}
-                        <div className="absolute -top-14 left-1/2 transform -translate-x-1/2 z-30 drop-shadow-xl pointer-events-none">
-                            <div className="w-4 h-12 bg-gradient-to-b from-yellow-100 to-yellow-600 rounded-t-sm"></div>
-                            <div className="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[24px] border-t-yellow-600 -mt-1"></div>
+                        {/* The Fixed Pointer (Needle) */}
+                        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 z-40 pointer-events-none pointer-shadow">
+                            <div className="flex flex-col items-center">
+                                {/* Cap */}
+                                <div className="w-4 h-4 rounded-full bg-gradient-to-b from-gray-200 to-gray-400 border border-gray-500 shadow-md z-10"></div>
+                                {/* Needle Body */}
+                                <div className="w-2 h-12 -mt-2 bg-gradient-to-b from-neonGold to-yellow-700 rounded-b-full shadow-lg border-x border-yellow-800"></div>
+                                {/* Sharp Tip */}
+                                <div className="w-0 h-0 -mt-1 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[18px] border-t-yellow-700"></div>
+                            </div>
                         </div>
 
-                        {/* Outer Glow Ring */}
-                        <div className="absolute -inset-6 rounded-full border-2 border-neonPurple/30 shadow-[0_0_60px_rgba(176,38,255,0.3)] z-0 animate-pulse-neon"></div>
-                        
-                        {/* The Wheel */}
-                        <div className="w-[340px] h-[340px] sm:w-[400px] sm:h-[400px] rounded-full border-[8px] border-slate-800 overflow-hidden shadow-[inset_0_0_60px_rgba(0,0,0,0.8)] bg-[#1a1a1a] relative z-10">
+                        {/* Wheel Frame */}
+                        <div className="w-[320px] h-[320px] sm:w-[400px] sm:h-[400px] rounded-full bg-slate-800 relative wheel-border flex items-center justify-center">
+                            
+                            {/* Rotating Wheel */}
                             <div 
-                                className="w-full h-full rounded-full wheel-container"
+                                className="w-[96%] h-[96%] rounded-full wheel-container overflow-hidden relative shadow-inner"
                                 style={{ 
                                     transform: `rotate(${rotation}deg)`,
                                     background: `conic-gradient(
@@ -454,24 +495,26 @@
                                     )`
                                 }}
                             >
-                                {/* Segments Rendering */}
+                                {/* Segments */}
                                 {SEGMENTS.map((seg, i) => (
                                     <React.Fragment key={i}>
-                                        <div className="absolute top-0 left-1/2 w-[1px] h-1/2 bg-white/20 origin-bottom transform -translate-x-1/2" style={{ transform: `rotate(${i * 30}deg)` }}></div>
+                                        {/* Divider */}
+                                        <div className="absolute top-0 left-1/2 w-[1px] h-1/2 bg-white/10 origin-bottom transform -translate-x-1/2" style={{ transform: `rotate(${i * 30}deg)` }}></div>
                                         
+                                        {/* Label */}
                                         <div 
-                                            className="segment-text-container"
+                                            className="absolute top-0 left-0 w-full h-full"
                                             style={{ transform: `rotate(${i * 30 + 15}deg)` }}
                                         >
-                                            <div className="segment-label">
+                                            <div className="absolute top-4 left-1/2 -translate-x-1/2 text-center">
                                                 <div 
-                                                    className="font-black text-[11px] sm:text-[13px] uppercase tracking-wider drop-shadow-md whitespace-nowrap"
+                                                    className="font-black text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
                                                     style={{ 
                                                         color: seg.textColor,
                                                         writingMode: 'vertical-rl',
                                                         textOrientation: 'mixed',
                                                         transform: 'rotate(180deg)',
-                                                        marginTop: '20px'
+                                                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
                                                     }}
                                                 >
                                                     {seg.label}
@@ -481,63 +524,63 @@
                                     </React.Fragment>
                                 ))}
                             </div>
-                            
-                            {/* Inner Shine */}
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
 
                             {/* Center Hub */}
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-gradient-to-br from-gray-800 to-black rounded-full flex items-center justify-center border-2 border-neonBlue shadow-glow-green z-20">
-                                <span className="text-xl animate-pulse">💠</span>
+                            <div className="absolute w-16 h-16 rounded-full bg-gradient-to-br from-slate-700 to-black border-4 border-slate-600 shadow-2xl flex items-center justify-center z-10">
+                                <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center border border-slate-700">
+                                    <div className="w-2 h-2 bg-neonBlue rounded-full animate-pulse shadow-[0_0_10px_#06b6d4]"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Status Display */}
-                    <div className={`mt-8 mb-4 px-6 py-3 rounded-xl border text-center font-bold text-sm w-full max-w-xs transition-all duration-300 shadow-xl z-20 backdrop-blur-md ${
-                        status.type === 'error' ? 'bg-red-900/80 border-red-500/50 text-red-100' :
-                        status.type === 'win' ? 'bg-neonGreen/20 border-neonGreen text-neonGreen' :
-                        status.type === 'process' ? 'bg-blue-900/80 border-blue-500/50 text-blue-100 animate-pulse' :
-                        'bg-white/5 border-white/10 text-gray-300'
-                    }`}>
-                        {status.msg}
+                    {/* Status & Controls */}
+                    <div className="mt-10 z-20 flex flex-col items-center w-full max-w-xs px-4">
+                        
+                        <div className={`w-full text-center py-3 rounded-xl font-bold text-sm mb-4 transition-all border backdrop-blur-sm ${
+                            status.type === 'error' ? 'bg-red-500/10 border-red-500 text-red-200' :
+                            status.type === 'win' ? 'bg-neonGreen/10 border-neonGreen text-neonGreen shadow-[0_0_20px_rgba(16,185,129,0.2)]' :
+                            status.type === 'process' ? 'bg-blue-500/10 border-blue-400 text-blue-200 animate-pulse' :
+                            'bg-white/5 border-white/10 text-gray-400'
+                        }`}>
+                            {status.msg}
+                        </div>
+
+                        <button 
+                            onClick={handleSpin}
+                            disabled={!walletAddress || isSpinning}
+                            className={`
+                                w-full py-4 rounded-xl font-black text-lg tracking-wider transition-all duration-200 transform
+                                ${!walletAddress 
+                                    ? 'bg-slate-800 text-slate-600 cursor-not-allowed' 
+                                    : isSpinning 
+                                        ? 'bg-slate-700 text-slate-500 cursor-wait scale-95'
+                                        : 'bg-gradient-to-r from-neonPurple to-neonBlue text-white shadow-lg hover:shadow-neonPurple/40 hover:scale-105 active:scale-95'
+                                }
+                            `}
+                        >
+                            {isSpinning ? 'SPINNING...' : `SPIN ${SPIN_COST} SOL`}
+                        </button>
+
+                        {/* History */}
+                        {history.length > 0 && (
+                            <div className="flex gap-2 mt-6">
+                                {history.map((h, i) => (
+                                    <div key={i} className={`
+                                        w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold border shadow-sm
+                                        ${h.type === 'win' ? 'bg-neonGreen/20 border-neonGreen text-neonGreen' : 'bg-red-500/20 border-red-500 text-red-400'}
+                                    `}>
+                                        {h.type === 'win' ? 'W' : 'L'}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
-                    {/* Main Button */}
-                    <button 
-                        onClick={handleSpin}
-                        disabled={!walletAddress || isSpinning}
-                        className={`
-                            relative w-64 h-16 rounded-full font-black text-xl transition-all duration-200 transform z-20
-                            ${!walletAddress 
-                                ? 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700' 
-                                : isSpinning 
-                                    ? 'bg-gray-700 text-gray-400 cursor-wait border border-gray-600'
-                                    : 'bg-gradient-to-r from-neonPurple to-neonBlue hover:scale-105 text-white shadow-glow-purple active:scale-95 hover:shadow-glow-green border-t border-white/30'
-                            }
-                        `}
-                    >
-                        <span className="flex items-center justify-center gap-2 drop-shadow-md">
-                            {isSpinning ? 'SPINNING...' : `SPIN ${SPIN_COST} SOL`}
-                        </span>
-                    </button>
-                    
-                    {/* History Strip */}
-                    {history.length > 0 && (
-                        <div className="mt-6 flex gap-2 z-10 opacity-80">
-                            {history.map((h, i) => (
-                                <div key={i} className={`
-                                    w-8 h-8 rounded flex items-center justify-center text-[10px] font-bold border transition-all
-                                    ${h.type === 'win' ? 'bg-neonGreen/20 border-neonGreen text-neonGreen' : 'bg-red-500/20 border-red-500 text-red-400'}
-                                `}>
-                                    {h.type === 'win' ? 'W' : 'L'}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    
-                    <div className="absolute bottom-4 text-[10px] text-gray-600 font-medium uppercase tracking-[0.2em] opacity-50">
-                         SOLANA MAINNET
+                    <div className="fixed bottom-4 text-[10px] text-slate-600 font-bold tracking-widest opacity-50">
+                        SOLANA MAINNET BETA
                     </div>
+
                 </div>
             );
         }
